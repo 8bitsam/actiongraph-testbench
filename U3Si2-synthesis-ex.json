@@ -1,0 +1,147 @@
+{
+    "doi": "10.1007/s11837-017-2654-6",
+    "paragraph_string": "One sample (C) was prepared with uranium and silicon powders in stoichiometric proportions (92.7 wt....",
+    "synthesis_type": "solid-state",
+    "reaction_string": "2 Si + 3 U == 1 U3Si2",
+    "reaction": {
+        "left_side": [
+        {
+            "amount": "2",
+            "material": "Si"
+        },
+        {
+            "amount": "3",
+            "material": "U"
+        }
+        ],
+        "right_side": [
+        {
+            "amount": "1",
+            "material": "U3Si2"
+        }
+        ],
+        "element_substitution": null
+    },
+    "target": {
+        "material_string": "U3Si2",
+        "material_formula": "U3Si2",
+        "material_name": "",
+        "phase": null,
+        "is_acronym": false,
+        "composition": [
+        {
+            "formula": "U3Si2",
+            "amount": "1",
+            "elements": {
+            "U": "3",
+            "Si": "2"
+            }
+        }
+        ],
+        "amounts_vars": {},
+        "elements_vars": {},
+        "additives": [],
+        "oxygen_deficiency": "None"
+    },
+    "targets_formula": [
+        "U3 Si2"
+    ],
+    "precursors_formula": null,
+    "targets_formula_s": [
+        "U3Si2"
+    ],
+    "precursors_formula_s": [
+        "Si",
+        "U"
+    ],
+    "precursors": [
+        {
+        "material_string": "Si",
+        "material_formula": "Si",
+        "material_name": "",
+        "phase": null,
+        "is_acronym": false,
+        "composition": [
+            {
+            "formula": "Si",
+            "amount": "1",
+            "elements": {
+                "Si": "1"
+            }
+            }
+        ],
+        "amounts_vars": {},
+        "elements_vars": {},
+        "additives": [],
+        "oxygen_deficiency": "None"
+        },
+        {
+        "material_string": "U",
+        "material_formula": "U",
+        "material_name": "",
+        "phase": null,
+        "is_acronym": false,
+        "composition": [
+            {
+            "formula": "U",
+            "amount": "1",
+            "elements": {
+                "U": "1"
+            }
+            }
+        ],
+        "amounts_vars": {},
+        "elements_vars": {},
+        "additives": [],
+        "oxygen_deficiency": "None"
+        }
+    ],
+    "operations": [
+        {
+        "type": "StartingSynthesis",
+        "token": "prepared",
+        "conditions": {
+            "heating_temperature": [],
+            "heating_time": [],
+            "heating_atmosphere": [],
+            "mixing_device": null,
+            "mixing_media": null
+        }
+        },
+        {
+        "type": "StartingSynthesis",
+        "token": "fabricated",
+        "conditions": {
+            "heating_temperature": [],
+            "heating_time": [],
+            "heating_atmosphere": [],
+            "mixing_device": null,
+            "mixing_media": null
+        }
+        }
+    ],
+    "search_score": 3.367584705352783,
+    "highlights": [
+        {
+        "score": 1.0962505340576172,
+        "path": "paragraph_string",
+        "texts": [
+            {
+            "value": "... with uranium and ",
+            "type": "text"
+            },
+            {
+            "value": "silicon",
+            "type": "hit"
+            },
+            {
+            "value": " powders in stoichiometric proportions (92.7 wt.% and 7.3 wt.%, ...",
+            "type": "text"
+            }
+        ]
+        }
+    ],
+    "fields_not_requested": [
+        "precursors_formula"
+    ]
+}  
