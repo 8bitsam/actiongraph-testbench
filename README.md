@@ -13,4 +13,8 @@ OperationNode : contains parameters for a single operation
 - conditions
 
 #### Action Flow
-The graph itself can be thought of as $A \rightarrow B \rightarrow C$, where $A$ is the input and $B$ is the output set of materials/chemicals and $C$ is the set of all operations.
+The graph itself can be thought of as $A \rightarrow B \rightarrow C$,
+where $A$ and $C$ are the input and output sets of
+materials/chemicals, respectively, and $B$ is the set of all operations.
+$A$ and $C$ are represented by chemical nodes and $B$ is represented by
+operation nodes.
