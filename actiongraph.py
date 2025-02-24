@@ -1,128 +1,163 @@
 import networkx as nx
 from networkx.readwrite import json_graph
+import matplotlib.pyplot as plt
+import json
 
 class ActionGraph(nx.DiGraph):
     """
-    A directed graph representing a chemical reaction flowchart.
+    A graph representing a chemical reaction flowchart.
     
-    Nodes represent chemicals (inputs or intermediate products).
-    Edges represent experimental steps (transformations) between chemicals.
+    Node Types:
+      - 'chemical': Represents a chemical (input or output).
+      - 'step': Represents an intermediate reaction step.
     
-    The graph is built in three phases:
-      1. Initialization: Create floating chemical nodes.
-      2. Adding Steps: Manually add an edge (step) between two chemical nodes.
-      3. Connecting Output: Connect selected nodes (or all sink nodes) to a single terminal output node.
+    Construction Workflow:
+      1. Input chemicals are added as isolated nodes.
+      2. Reaction steps (operations) are added via add_step(), which connects 
+         provided source nodes (which can be chemicals or previous steps) to the step node.
+      3. A terminal (final) step node is created via merge_to_terminal() to merge 
+         preceding step nodes. This is the de facto terminal node.
+      4. Output chemicals are added as nodes and connected from the terminal node.
     """
     
-    def __init__(self, chemicals=None):
+    def __init__(self, input_chemicals=None):
         """
-        Initialize the graph with a list of chemical nodes.
-        
         Parameters
         ----------
-        chemicals : list of str, optional
-            List of chemical names/data to add as floating nodes.
-            Each chemical will be added as a node with a generated ID.
+        input_chemicals : list of str, optional
+            List of chemical names/formulas to be added as input nodes.
         """
         super().__init__()
-        if chemicals:
-            for i, chem in enumerate(chemicals):
-                node_id = f"chem_{i}"
+        self.input_nodes = []    # IDs for input chemical nodes
+        self.step_nodes = []     # IDs for intermediate reaction step nodes
+        self.output_nodes = []   # IDs for output chemical nodes
+        self.terminal_node = None  # ID for the de facto terminal step node
+        
+        if input_chemicals:
+            for i, chem in enumerate(input_chemicals):
+                node_id = f"input_{i}"
                 self.add_node(node_id, type="chemical", data=chem)
+                self.input_nodes.append(node_id)
     
-    def add_chemical(self, chem, node_id=None):
+    def add_input(self, chemical, node_id=None):
         """
-        Add a chemical node to the graph.
+        Add an input chemical node.
         
         Parameters
         ----------
-        chem : str
-            The chemical data (e.g., a name or formula).
+        chemical : str
+            The chemical data (e.g., name or formula).
         node_id : str, optional
-            Custom identifier for the chemical node; if not provided, a default is generated.
+            Custom node identifier. If not provided, a default is generated.
         
         Returns
         -------
         str
-            The identifier of the newly added chemical node.
+            The identifier of the added chemical node.
         """
         if node_id is None:
-            node_id = f"chem_{len(self.nodes)}"
+            node_id = f"input_{len(self.input_nodes)}"
         if node_id in self.nodes:
             raise ValueError(f"Node '{node_id}' already exists.")
-        self.add_node(node_id, type="chemical", data=chem)
+        self.add_node(node_id, type="chemical", data=chemical)
+        self.input_nodes.append(node_id)
         return node_id
     
-    def add_step(self, source, destination, step_data):
+    def add_step(self, step_description, source_nodes, node_id=None):
         """
-        Add an experimental step (edge) between two chemical nodes.
+        Add a reaction step node and connect it from the given source nodes.
         
         Parameters
         ----------
-        source : str
-            The identifier of the source chemical node.
-        destination : str
-            The identifier of the destination chemical node.
-        step_data : str
-            A description of the experimental step (e.g., "heat for 20 mins at 20°C").
-        
-        Returns
-        -------
-        tuple
-            A tuple (source, destination) representing the edge added.
-        """
-        if source not in self.nodes:
-            raise ValueError(f"Source node '{source}' does not exist.")
-        if destination not in self.nodes:
-            raise ValueError(f"Destination node '{destination}' does not exist.")
-        if self.nodes[source].get("type") != "chemical":
-            raise ValueError(f"Source node '{source}' is not a chemical node.")
-        if self.nodes[destination].get("type") != "chemical":
-            raise ValueError(f"Destination node '{destination}' is not a chemical node.")
-        
-        self.add_edge(source, destination, step=step_data)
-        return (source, destination)
-    
-    def connect_output(self, output_data, source_nodes=None):
-        """
-        Connect selected chemical nodes to a single terminal output node.
-        If no source_nodes are provided, automatically connect all chemical nodes
-        that have no outgoing edges.
-        
-        Parameters
-        ----------
-        output_data : any
-            Data for the output node (e.g., the final product's name or formula).
-        source_nodes : list of str, optional
-            List of chemical node identifiers to connect to the output node.
+        step_description : str
+            Description of the reaction step (e.g., "mixed using anatase TiO2").
+        source_nodes : list of str
+            List of node IDs from which the reaction step is initiated.
+        node_id : str, optional
+            Custom identifier for the step node. If not provided, a default is generated.
         
         Returns
         -------
         str
-            The identifier of the output node.
+            The identifier of the added step node.
         """
-        output_node = "output"
-        if output_node not in self.nodes:
-            self.add_node(output_node, type="output", data=output_data)
-        else:
-            self.nodes[output_node]['data'] = output_data
+        if node_id is None:
+            node_id = f"step_{len(self.step_nodes)}"
+        if node_id in self.nodes:
+            raise ValueError(f"Node '{node_id}' already exists.")
+        self.add_node(node_id, type="step", data=step_description)
+        self.step_nodes.append(node_id)
+        for src in source_nodes:
+            if src not in self.nodes:
+                raise ValueError(f"Source node '{src}' does not exist.")
+            self.add_edge(src, node_id)
+        return node_id
+    
+    def merge_to_terminal(self, source_nodes, terminal_step_description="Final Reaction Step", terminal_node_id="terminal"):
+        """
+        Merge one or more reaction steps into a single de facto terminal node.
+        This node will serve as the final reaction step from which output chemicals are derived.
         
-        if source_nodes is None:
-            # Automatically choose all chemical nodes with no outgoing edges
-            source_nodes = [n for n in self.nodes 
-                            if self.out_degree(n) == 0 and self.nodes[n].get("type") == "chemical"]
+        Parameters
+        ----------
+        source_nodes : list of str
+            List of node IDs (typically step nodes) to merge.
+        terminal_step_description : str, optional
+            Description for the terminal reaction step.
+        terminal_node_id : str, optional
+            Identifier for the terminal node.
+        
+        Returns
+        -------
+        str
+            The identifier of the terminal node.
+        """
+        if terminal_node_id in self.nodes:
+            self.nodes[terminal_node_id]['data'] = terminal_step_description
+        else:
+            self.add_node(terminal_node_id, type="step", data=terminal_step_description)
+        self.terminal_node = terminal_node_id
         
         for src in source_nodes:
-            self.add_edge(src, output_node, step="finalize")
-        return output_node
+            if src not in self.nodes:
+                raise ValueError(f"Source node '{src}' does not exist.")
+            self.add_edge(src, terminal_node_id)
+        return terminal_node_id
+    
+    def add_output(self, chemical, node_id=None):
+        """
+        Add an output chemical node and connect it from the terminal node.
+        
+        Parameters
+        ----------
+        chemical : str
+            The chemical data for the output.
+        node_id : str, optional
+            Custom identifier for the output node. If not provided, a default is generated.
+        
+        Returns
+        -------
+        str
+            The identifier of the added output chemical node.
+        """
+        if self.terminal_node is None:
+            raise ValueError("Terminal node not defined. Call merge_to_terminal() before adding outputs.")
+        if node_id is None:
+            node_id = f"output_{len(self.output_nodes)}"
+        if node_id in self.nodes:
+            raise ValueError(f"Node '{node_id}' already exists.")
+        self.add_node(node_id, type="chemical", data=chemical)
+        self.output_nodes.append(node_id)
+        self.add_edge(self.terminal_node, node_id)
+        return node_id
     
     def serialize(self):
         """
-        Serialize the ActionGraph into a dictionary format using NetworkX's node_link_data.
+        Serialize the ActionGraph into a dictionary using networkx's node_link_data.
         
         Returns
         -------
         dict
-            A serialized dictionary representation of the graph.
+            The serialized graph.
         """
         return json_graph.node_link_data(self)
