@@ -142,7 +142,7 @@ class ActionGraph(nx.DiGraph):
     def display(self):
         """Plot the ActionGraph with different edge and node types labeled."""
         plt.figure(figsize=(12, 8))
-        pos = nx.spring_layout(self, seed=42, k=0.5)  # Increased spacing
+        pos = nx.spring_layout(self, seed=42, k=0.5)
         nx.draw_networkx_edges(
             self, pos,
             edgelist=self.edges(),
@@ -174,14 +174,13 @@ class ActionGraph(nx.DiGraph):
             self, pos,
             font_size=12,
             font_weight='bold',
-            font_color='white'
+            font_color='black'
         )
         legend_elements = [
             mpatches.Patch(color='#1f77b4', label='Input Chemicals'),
             mpatches.Patch(color='#d62728', label='Operations'),
             mpatches.Patch(color='#2ca02c', label='Terminal Node'),
             mpatches.Patch(color='#ff7f0e', label='Output Chemicals'),
-            mpatches.Arrow(0, 0, 0, 0, color='#7f7f7f', label='Edges', width=2)
         ]
         plt.legend(handles=legend_elements, loc='best', fontsize=10)
         plt.axis('off')
