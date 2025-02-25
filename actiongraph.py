@@ -3,6 +3,9 @@ from networkx.readwrite import json_graph
 from pymatgen.core import Composition
 from emmet.core.synthesis import OperationTypeEnum
 from typing import Dict, List, Optional
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+
 
 class ActionGraph(nx.DiGraph):
     """
@@ -135,6 +138,55 @@ class ActionGraph(nx.DiGraph):
             if 'op_type' in node:
                 node['op_type'] = node['op_type'].value
         return data
+
+    def display(self):
+        """Plot the ActionGraph with different edge and node types labeled."""
+        plt.figure(figsize=(12, 8))
+        pos = nx.spring_layout(self, seed=42, k=0.5)  # Increased spacing
+        nx.draw_networkx_edges(
+            self, pos,
+            edgelist=self.edges(),
+            edge_color='#7f7f7f',
+            arrows=True,
+            arrowsize=20,
+            arrowstyle='-|>',
+            width=2,
+            node_size=1500
+        )
+        node_colors = []
+        for node in self.nodes():
+            if node in self.input_nodes:
+                node_colors.append('#1f77b4')
+            elif node in self.output_nodes:
+                node_colors.append('#ff7f0e')
+            elif node == self.terminal_node:
+                node_colors.append('#2ca02c')
+            else:
+                node_colors.append('#d62728')
+        nx.draw_networkx_nodes(
+            self, pos,
+            node_color=node_colors,
+            node_size=1500,
+            edgecolors='black',
+            linewidths=2
+        )
+        nx.draw_networkx_labels(
+            self, pos,
+            font_size=12,
+            font_weight='bold',
+            font_color='white'
+        )
+        legend_elements = [
+            mpatches.Patch(color='#1f77b4', label='Input Chemicals'),
+            mpatches.Patch(color='#d62728', label='Operations'),
+            mpatches.Patch(color='#2ca02c', label='Terminal Node'),
+            mpatches.Patch(color='#ff7f0e', label='Output Chemicals'),
+            mpatches.Arrow(0, 0, 0, 0, color='#7f7f7f', label='Edges', width=2)
+        ]
+        plt.legend(handles=legend_elements, loc='best', fontsize=10)
+        plt.axis('off')
+        plt.tight_layout()
+        plt.show()
 
     @classmethod
     def deserialize(cls, data: Dict) -> 'ActionGraph':
