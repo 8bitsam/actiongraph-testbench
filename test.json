@@ -1,0 +1,117 @@
+{
+    "directed": true,
+    "multigraph": false,
+    "graph": {},
+    "nodes": [
+        {
+            "type": "chemical",
+            "formula": "Si",
+            "composition": {
+                "Si": 1.0
+            },
+            "amount": 1.0,
+            "elements": {
+                "Si": "1"
+            },
+            "id": "chem_in_0"
+        },
+        {
+            "type": "chemical",
+            "formula": "U",
+            "composition": {
+                "U": 1.0
+            },
+            "amount": 1.0,
+            "elements": {
+                "U": "1"
+            },
+            "id": "chem_in_1"
+        },
+        {
+            "type": "operation",
+            "op_type": "StartingSynthesis",
+            "token": "prepared",
+            "conditions": {
+                "temperature": [],
+                "time": [],
+                "atmosphere": [],
+                "device": null,
+                "media": null
+            },
+            "id": "op_0"
+        },
+        {
+            "type": "operation",
+            "op_type": "StartingSynthesis",
+            "token": "fabricated",
+            "conditions": {
+                "temperature": [],
+                "time": [],
+                "atmosphere": [],
+                "device": null,
+                "media": null
+            },
+            "id": "op_1"
+        },
+        {
+            "type": "operation",
+            "op_type": "StartingSynthesis",
+            "token": "Final Step",
+            "conditions": {},
+            "id": "terminal"
+        },
+        {
+            "type": "chemical",
+            "formula": "U3Si2",
+            "composition": {
+                "U": 3.0,
+                "Si": 2.0
+            },
+            "amount": 1.0,
+            "elements": {
+                "U": "3",
+                "Si": "2"
+            },
+            "id": "chem_out_0"
+        }
+    ],
+    "links": [
+        {
+            "edge_type": "temporal",
+            "source": "chem_in_0",
+            "target": "op_0"
+        },
+        {
+            "edge_type": "temporal",
+            "source": "chem_in_1",
+            "target": "op_0"
+        },
+        {
+            "edge_type": "temporal",
+            "source": "op_0",
+            "target": "op_1"
+        },
+        {
+            "edge_type": "temporal",
+            "source": "op_1",
+            "target": "terminal"
+        },
+        {
+            "edge_type": "material_flow",
+            "source": "terminal",
+            "target": "chem_out_0"
+        }
+    ],
+    "input_nodes": [
+        "chem_in_0",
+        "chem_in_1"
+    ],
+    "operation_nodes": [
+        "op_0",
+        "op_1"
+    ],
+    "output_nodes": [
+        "chem_out_0"
+    ],
+    "terminal_node": "terminal"
+}

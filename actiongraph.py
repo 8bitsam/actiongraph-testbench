@@ -31,27 +31,33 @@ class ActionGraph(nx.DiGraph):
                 self.add_input(chem)
 
     def add_input(self, chemical_data: Dict, node_id: Optional[str] = None):
-        """
-        Add chemical precursor node with full material data
-        
-        Parameters
-        ----------
-        chemical_data : dict
-            MP precursor format with keys:
-            - material_formula
-            - composition
-            - elements
-            - amount
-        """
+        """Add chemical precursor node with full material data"""
         if node_id is None:
             node_id = f"chem_in_{len(self.input_nodes)}"
+        
+        # Safely extract amount value, handling dictionary structures
+        amount = chemical_data['composition'][0]['amount']
+        if isinstance(amount, dict):
+            # Try different possible dict structures
+            if 'value' in amount:
+                amount = amount['value']
+            elif 'values' in amount and amount['values']:
+                amount = amount['values'][0]
+            elif 'min_value' in amount and 'max_value' in amount:
+                # Use average of min and max
+                amount = (float(amount['min_value']) + float(amount['max_value'])) / 2
+            else:
+                # Default fallback
+                amount = 1.0
+        
         features = {
             'type': 'chemical',
             'formula': chemical_data['material_formula'],
             'composition': Composition(chemical_data['material_formula']),
-            'amount': float(chemical_data['composition'][0]['amount']),
+            'amount': float(amount),
             'elements': chemical_data['composition'][0]['elements']
         }
+        
         self._add_node_safe(node_id, **features)
         self.input_nodes.append(node_id)
         return node_id
@@ -103,13 +109,30 @@ class ActionGraph(nx.DiGraph):
             raise ValueError("Create terminal node first")
         if node_id is None:
             node_id = f"chem_out_{len(self.output_nodes)}"
+        
+        # Safely extract amount value, handling dictionary structures
+        amount = target_data['composition'][0]['amount']
+        if isinstance(amount, dict):
+            # Try different possible dict structures
+            if 'value' in amount:
+                amount = amount['value']
+            elif 'values' in amount and amount['values']:
+                amount = amount['values'][0]
+            elif 'min_value' in amount and 'max_value' in amount:
+                # Use average of min and max
+                amount = (float(amount['min_value']) + float(amount['max_value'])) / 2
+            else:
+                # Default fallback
+                amount = 1.0
+        
         features = {
             'type': 'chemical',
             'formula': target_data['material_formula'],
             'composition': Composition(target_data['material_formula']),
-            'amount': float(target_data['composition'][0]['amount']),
+            'amount': float(amount),
             'elements': target_data['composition'][0]['elements']
         }
+        
         self._add_node_safe(node_id, **features)
         self.output_nodes.append(node_id)
         self.add_edge(self.terminal_node, node_id, edge_type='material_flow')
@@ -123,24 +146,46 @@ class ActionGraph(nx.DiGraph):
 
     def _parse_conditions(self, cond: Dict) -> Dict:
         """Normalize condition data types"""
+        temperatures = []
+        times = []
+        
+        # Extract temperature values from potentially nested structures
+        for t in cond.get('heating_temperature', []):
+            if isinstance(t, (int, float)):
+                temperatures.append(float(t))
+            elif isinstance(t, dict):
+                # Handle structured temperature data
+                if 'values' in t and t['values']:
+                    temperatures.extend([float(val) for val in t['values']])
+                elif 'value' in t:
+                    temperatures.append(float(t['value']))
+                elif 'min_value' in t and 'max_value' in t:
+                    temperatures.append(float(t['min_value']))
+                    temperatures.append(float(t['max_value']))
+        
+        # Similar logic for time values
+        for t in cond.get('heating_time', []):
+            if isinstance(t, (int, float)):
+                times.append(float(t))
+            elif isinstance(t, dict):
+                if 'values' in t and t['values']:
+                    times.extend([float(val) for val in t['values']])
+                elif 'value' in t:
+                    times.append(float(t['value']))
+                elif 'min_value' in t and 'max_value' in t:
+                    times.append(float(t['min_value']))
+                    times.append(float(t['max_value']))
+        
         return {
-            'temperature': [float(t) for t in cond.get('heating_temperature', [])],
-            'time': [float(t) for t in cond.get('heating_time', [])],
+            'temperature': temperatures,
+            'time': times,
             'atmosphere': cond.get('heating_atmosphere', []),
             'device': cond.get('mixing_device'),
             'media': cond.get('mixing_media')
         }
 
-    def serialize(self) -> Dict:
-        """Networkx-compatible serialization with enum handling"""
-        data = json_graph.node_link_data(self)
-        for node in data['nodes']:
-            if 'op_type' in node:
-                node['op_type'] = node['op_type'].value
-        return data
-
     def display(self):
-        """Plot the ActionGraph with different edge and node types labeled."""
+        """Plot the ActionGraph with labels."""
         plt.figure(figsize=(12, 8))
         pos = nx.spring_layout(self, seed=42, k=0.5)
         nx.draw_networkx_edges(
@@ -187,17 +232,92 @@ class ActionGraph(nx.DiGraph):
         plt.tight_layout()
         plt.show()
 
+    def serialize(self) -> Dict:
+        """Convert an ActionGraph into a dictionary."""
+        serializable_graph = nx.DiGraph()
+        for node_id, attrs in self.nodes(data=True):
+            node_attrs = {}
+            for key, value in attrs.items():
+                if key == 'composition' and hasattr(value, 'as_dict'):
+                    node_attrs[key] = value.as_dict()
+                elif key == 'op_type' and hasattr(value, 'value'):
+                    node_attrs[key] = value.value
+                else:
+                    node_attrs[key] = value
+            serializable_graph.add_node(node_id, **node_attrs)
+        for src, tgt, attrs in self.edges(data=True):
+            serializable_graph.add_edge(src, tgt, **attrs)
+        data = json_graph.node_link_data(serializable_graph)
+        data['input_nodes'] = self.input_nodes
+        data['operation_nodes'] = self.operation_nodes
+        data['output_nodes'] = self.output_nodes
+        data['terminal_node'] = self.terminal_node
+        return data
+
     @classmethod
     def deserialize(cls, data: Dict) -> 'ActionGraph':
-        """Reconstruct from serialized data"""
+        """Reconstruct an ActionGraph from a dictionary."""
         ag = cls()
-        ag.graph = data['graph']
+        ag.graph = data.get('graph', {})
+        
+        # Process nodes
         for node in data['nodes']:
-            if 'op_type' in node:
-                node['op_type'] = OperationTypeEnum(node['op_type'])
-            ag.add_node(node['id'], **node['attributes'])
+            node_id = node['id']
+            
+            # Extract attributes from node
+            attrs = {}
+            for k, v in node.items():
+                if k != 'id':
+                    attrs[k] = v
+            
+            # Convert specific attributes
+            if 'composition' in attrs and isinstance(attrs['composition'], dict):
+                attrs['composition'] = Composition.from_dict(attrs['composition'])
+            if 'op_type' in attrs and isinstance(attrs['op_type'], str):
+                attrs['op_type'] = OperationTypeEnum(attrs['op_type'])
+            
+            # Add node with attributes
+            ag.add_node(node_id, **attrs)
+        
+        # Process edges
         for link in data['links']:
-            ag.add_edge(link['source'], link['target'], **link.get('attributes', {}))
+            source = link.get('source')
+            target = link.get('target')
+            
+            # Handle various source/target formats
+            if isinstance(source, dict):
+                source = source.get('id')
+            if isinstance(target, dict):
+                target = target.get('id')
+            
+            # Extract edge attributes
+            edge_attrs = {}
+            for k, v in link.items():
+                if k not in ['source', 'target']:
+                    edge_attrs[k] = v
+            
+            ag.add_edge(source, target, **edge_attrs)
+        
+        # Set node lists with validation
+        ag.input_nodes = data.get('input_nodes', [])
+        ag.operation_nodes = data.get('operation_nodes', [])
+        ag.output_nodes = data.get('output_nodes', [])
+        ag.terminal_node = data.get('terminal_node')
+        
+        # Validate node lists - ensure they reference actual nodes
+        ag.input_nodes = [node_id for node_id in ag.input_nodes if node_id in ag.nodes]
+        ag.operation_nodes = [node_id for node_id in ag.operation_nodes if node_id in ag.nodes]
+        ag.output_nodes = [node_id for node_id in ag.output_nodes if node_id in ag.nodes]
+        
+        # If input_nodes is empty but we have nodes that look like inputs, try to recover them
+        if not ag.input_nodes:
+            potential_inputs = [node_id for node_id, attrs in ag.nodes(data=True) 
+                            if node_id.startswith('chem_in_') or 
+                                (attrs.get('type') == 'chemical' and ag.in_degree(node_id) == 0)]
+            if potential_inputs:
+                print(f"Recovered {len(potential_inputs)} input nodes that were missing from input_nodes list")
+                ag.input_nodes = potential_inputs
+        
         return ag
 
     @classmethod
