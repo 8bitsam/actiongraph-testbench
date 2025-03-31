@@ -3,11 +3,6 @@ import argparse
 
 def run_pipeline(steps):
     """Run the full pipeline or selected steps."""
-    if 'filter' in steps or 'all' in steps:
-        print("Step 1: Filtering synthesis data...")
-        from filter_synthesis_data import filter_synthesis_data
-        filter_synthesis_data()
-    
     if 'convert' in steps or 'all' in steps:
         print("Step 2: Converting to action graphs...")
         from convert_to_action_graphs import convert_to_action_graphs
@@ -41,7 +36,7 @@ def run_pipeline(steps):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Inorganic Synthesis Prediction Pipeline')
     parser.add_argument('--steps', nargs='+', 
-                        choices=['filter', 'convert', 'featurize', 'train', 'evaluate', 'all'], 
+                        choices=['convert', 'featurize', 'train', 'evaluate', 'all'], 
                         default=['all'], help='Steps to run in the pipeline')
     
     args = parser.parse_args()

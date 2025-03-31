@@ -1,0 +1,2 @@
+Recall@1,Precision@1,Recall@3,Precision@3,Recall@5,Precision@5,Recall@10,Precision@10,Similarity_Jaccard,Similarity_Dice,Similarity_Overlap,Precision_Overall,Recall_Overall,F1_Overall,Precision_Precursor,Recall_Precursor,F1_Precursor
+0.3868236900494965,1.0,0.9446492575524834,0.8568015019627923,0.9986345792797406,0.5603686635944701,1.0,0.28100358422939065,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0
