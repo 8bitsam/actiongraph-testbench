@@ -1,0 +1,334 @@
+--- Starting Pipeline (Model: RF) ---
+Steps to run: train, evaluate
+
+>>> Executing Train Step (RF) <<<
+--- Running Training Step (Model: RF) ---
+Model artifacts will be saved to: ../Data/models/rf-model
+
+Loading featurized data from: ../Data/featurized-data-baseline/
+Loaded 11989 samples.
+Feature array shape: (11989, 124)
+
+Performing train/test split (Test size: 0.25)...
+Training set size: 8991
+
+Fitting scaler on training data...
+Scaling took 0.15 seconds.
+
+Preparing targets for Random Forest (Multi-Label Classification)...
+  Precursor Vocabulary Size: 666
+  Operation Type Vocabulary Size: 6
+
+Training Random Forest models (n_estimators=100, n_jobs=-1)...
+  Training precursor predictor...
+  Training operation type predictor...
+Model training took 44.94 seconds.
+
+Saving trained artifacts to: ../Data/models/rf-model
+Training step completed successfully.
+Train step finished in 62.28 seconds.
+
+>>> Executing Evaluate Step (RF) <<<
+--- Running Evaluation Step (Model: RF) ---
+Loading model artifacts from: ../Data/models/rf-model
+
+Loading featurized data from: ../Data/featurized-data-baseline/
+Loaded 11989 total samples.
+
+Recreating train/test split (Test size: 0.25, Random State: 42)...
+Test set size: 2998
+
+Scaling test features using loaded scaler...
+Scaling took 0.06 seconds.
+
+Predicting recipes for the test set using RF model...
+  Predicting precursors...
+  Predicting operation types...
+Prediction took 9.60 seconds.
+
+Evaluating predictions with detailed metrics...
+Evaluation calculation took 0.03 seconds.
+
+--- Evaluation Summary ---
+Model Type: RF
+Test Set Size: 2998
+
+-- Precursor Metrics --
+avg_precursors_exact_match    : 0.4266
+avg_precursors_formula_jaccard: 0.6974
+avg_precursors_precision      : 0.7563
+avg_precursors_recall         : 0.8699
+avg_precursors_f1             : 0.7768
+
+-- Operation Metrics --
+avg_operations_exact_match    : 0.0000 (Not applicable for RF)
+avg_operations_length_match   : 0.0000 (Not applicable for RF)
+avg_operations_type_jaccard   : 0.6266
+avg_op_type_precision         : 0.7680
+avg_op_type_recall            : 0.7676
+avg_op_type_f1                : 0.7289
+
+--- Example Prediction ---
+Test Entry Original Identifier: reaction_5683479849865237275.json
+Test Target Formula         : La0.75Sr0.25Cr0.5Mn0.5O3
+
+Predicted Recipe/Components:
+{
+  "precursors": [
+    {
+      "material_formula": "SrCO3"
+    },
+    {
+      "material_formula": "Mn2O3"
+    },
+    {
+      "material_formula": "La2O3"
+    },
+    {
+      "material_formula": "MnCO3"
+    },
+    {
+      "material_formula": "Cr2O3"
+    }
+  ],
+  "operations": [
+    {
+      "type": "StartingSynthesis"
+    },
+    {
+      "type": "HeatingOperation"
+    },
+    {
+      "type": "MixingOperation"
+    },
+    {
+      "type": "DryingOperation"
+    }
+  ]
+}
+
+True Recipe:
+{
+  "precursors": [
+    {
+      "material_string": "MnCO3",
+      "material_formula": "MnCO3",
+      "material_name": "",
+      "phase": null,
+      "is_acronym": false,
+      "composition": [
+        {
+          "formula": "MnCO3",
+          "amount": "1",
+          "elements": {
+            "Mn": "1",
+            "C": "1",
+            "O": "3"
+          }
+        }
+      ],
+      "amounts_vars": {},
+      "elements_vars": {},
+      "additives": [],
+      "oxygen_deficiency": "None"
+    },
+    {
+      "material_string": "SrCO3",
+      "material_formula": "SrCO3",
+      "material_name": "",
+      "phase": null,
+      "is_acronym": false,
+      "composition": [
+        {
+          "formula": "SrCO3",
+          "amount": "1",
+          "elements": {
+            "Sr": "1",
+            "C": "1",
+            "O": "3"
+          }
+        }
+      ],
+      "amounts_vars": {},
+      "elements_vars": {},
+      "additives": [],
+      "oxygen_deficiency": "None"
+    },
+    {
+      "material_string": "Cr2O3",
+      "material_formula": "Cr2O3",
+      "material_name": "",
+      "phase": null,
+      "is_acronym": false,
+      "composition": [
+        {
+          "formula": "Cr2O3",
+          "amount": "1",
+          "elements": {
+            "Cr": "2",
+            "O": "3"
+          }
+        }
+      ],
+      "amounts_vars": {},
+      "elements_vars": {},
+      "additives": [],
+      "oxygen_deficiency": "None"
+    },
+    {
+      "material_string": "La2O3",
+      "material_formula": "La2O3",
+      "material_name": "",
+      "phase": null,
+      "is_acronym": false,
+      "composition": [
+        {
+          "formula": "La2O3",
+          "amount": "1",
+          "elements": {
+            "La": "2",
+            "O": "3"
+          }
+        }
+      ],
+      "amounts_vars": {},
+      "elements_vars": {},
+      "additives": [],
+      "oxygen_deficiency": "None"
+    }
+  ],
+  "operations": [
+    {
+      "type": "StartingSynthesis",
+      "token": "prepared",
+      "conditions": {
+        "heating_temperature": [],
+        "heating_time": [],
+        "heating_atmosphere": [],
+        "mixing_device": null,
+        "mixing_media": null
+      }
+    },
+    {
+      "type": "MixingOperation",
+      "token": "mixed",
+      "conditions": {
+        "heating_temperature": [],
+        "heating_time": [],
+        "heating_atmosphere": [],
+        "mixing_device": null,
+        "mixing_media": null
+      }
+    },
+    {
+      "type": "HeatingOperation",
+      "token": "treated",
+      "conditions": {
+        "heating_temperature": [
+          {
+            "min_value": 1200.0,
+            "max_value": 1200.0,
+            "values": [
+              1200.0
+            ],
+            "units": "\u00b0C"
+          }
+        ],
+        "heating_time": [
+          {
+            "min_value": 10.0,
+            "max_value": 10.0,
+            "values": [
+              10.0
+            ],
+            "units": "h"
+          }
+        ],
+        "heating_atmosphere": [
+          "air"
+        ],
+        "mixing_device": null,
+        "mixing_media": null
+      }
+    },
+    {
+      "type": "HeatingOperation",
+      "token": "sintered",
+      "conditions": {
+        "heating_temperature": [
+          {
+            "min_value": 1490.0,
+            "max_value": 1490.0,
+            "values": [
+              1490.0
+            ],
+            "units": "\u00b0C"
+          }
+        ],
+        "heating_time": [
+          {
+            "min_value": 3.0,
+            "max_value": 3.0,
+            "values": [
+              3.0
+            ],
+            "units": "h"
+          }
+        ],
+        "heating_atmosphere": [],
+        "mixing_device": null,
+        "mixing_media": null
+      }
+    },
+    {
+      "type": "HeatingOperation",
+      "token": "sintered",
+      "conditions": {
+        "heating_temperature": [
+          {
+            "min_value": 1200.0,
+            "max_value": 1200.0,
+            "values": [
+              1200.0
+            ],
+            "units": "\u00b0C"
+          }
+        ],
+        "heating_time": [
+          {
+            "min_value": 3.0,
+            "max_value": 3.0,
+            "values": [
+              3.0
+            ],
+            "units": "h"
+          }
+        ],
+        "heating_atmosphere": [],
+        "mixing_device": null,
+        "mixing_media": null
+      }
+    }
+  ]
+}
+
+Eval Metrics for this Example:
+{
+  "precursors_exact_match": false,
+  "precursors_formula_jaccard": 0.8,
+  "precursors_precision": 0.8,
+  "precursors_recall": 1.0,
+  "precursors_f1": 0.888888888888889,
+  "operations_exact_match": false,
+  "operations_type_jaccard": 0.75,
+  "op_type_precision": 0.75,
+  "op_type_recall": 1.0,
+  "op_type_f1": 0.8571428571428571,
+  "operations_length_match": false
+}
+
+Evaluation step completed successfully.
+Evaluate step finished in 22.16 seconds.
+
+--- Pipeline Finished (Success: True) ---
+Total pipeline execution time: 84.43 seconds.
