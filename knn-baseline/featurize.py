@@ -15,8 +15,8 @@ RAW_DATA_DIR = os.path.join(DATA_DIR, "filtered-mp-data/")
 FEATURIZED_DATA_DIR = os.path.join(DATA_DIR, "featurized-data-baseline/")
 
 ELEMENT_PROPS = [
-    'atomic_mass', 'atomic_radius', 'atomic_volume',
-    'electronegativity', 'electron_affinity', 'ionization_energy'
+    'atomic_mass', 'atomic_radius', 'melting_point',
+    'X', 'electron_affinity', 'ionization_energy'
 ]
 
 warnings.filterwarnings("ignore", category=UserWarning, module="pymatgen")
@@ -130,7 +130,7 @@ def get_recipe_hash(entry):
         hash_content = f"TARGET:{target_formula}|PRECURSORS:{','.join(prec_formulas)}|OPERATIONS:{'|'.join(op_strings)}"
 
         # Return MD5 hash (or other hash like SHA256)
-        return hashlib.md5(hash_content.encode('utf-8')).hexdigest()
+        return hashlib.md5(hash_content.encode('utf-8')).hexdigest() # DONT USE md5 hash
     except Exception as e:
         # Handle cases where serialization fails (e.g., non-standard data in ops)
         # print(f"Warning: Could not generate hash for entry {_entry.get('_source_file', 'unknown')}: {e}", file=sys.stderr)
