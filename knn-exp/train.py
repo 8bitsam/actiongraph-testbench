@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import QuantileTransformer
+from sklearn.preprocessing import StandardScaler
 import joblib
 import os
 import time
@@ -51,6 +52,7 @@ def run_train(featurized_dir=DEFAULT_FEATURIZED_DATA_DIR, model_out_dir=DEFAULT_
 
     print("Fitting scaler...")
     scaler = QuantileTransformer(output_distribution='normal', random_state=RANDOM_STATE, n_quantiles=min(1000, len(X_train)))
+    # scaler = StandardScaler()
     try:
         scaler.fit(X_train)
     except Exception as e:

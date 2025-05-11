@@ -17,8 +17,8 @@ RAW_DATA_DIR = os.path.join(DATA_DIR, "filtered-mp-data/")
 DEFAULT_FEATURIZED_DATA_DIR = os.path.join(DATA_DIR, "featurized-data-weighted/")
 
 ELEMENT_PROPS = [
-    'atomic_mass', 'atomic_radius', 'atomic_volume',
-    'electronegativity', 'electron_affinity', 'ionization_energy'
+    'atomic_mass', 'atomic_radius', 'melting_point',
+    'X', 'electron_affinity', 'ionization_energy'
 ]
 NUM_ELEMENT_PROPS = len(ELEMENT_PROPS)
 

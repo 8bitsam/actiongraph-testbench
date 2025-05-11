@@ -28,7 +28,8 @@ GRID_SEARCH_TEMP_BASE_DIR = os.path.join(DATA_DIR, "grid_search_temp") # Base te
 
 # Grid Search Parameters
 # Define the possible values for each weight in the z vector
-GRID_VALUES_DEFAULT = np.linspace(0, 1, 5)
+# GRID_VALUES_DEFAULT = np.linspace(0, 1, 3)
+GRID_VALUES_DEFAULT = [0]
 # Metric to maximize
 METRIC_TO_OPTIMIZE_DEFAULT = 'avg_precursors_f1'
 
