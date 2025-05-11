@@ -1,0 +1,161 @@
+{
+  "doi": "10.1016/j.ssi.2016.12.012",
+  "paragraph_string": "MnSn2 was prepared by a solid state reaction method starting from micrometric tin (Sigma Aldrich, ...",
+  "synthesis_type": "solid-state",
+  "reaction_string": "1 Mn + 2 Sn == 1 MnSn2",
+  "reaction": {
+    "left_side": [
+      {
+        "amount": "1",
+        "material": "Mn"
+      },
+      {
+        "amount": "2",
+        "material": "Sn"
+      }
+    ],
+    "right_side": [
+      {
+        "amount": "1",
+        "material": "MnSn2"
+      }
+    ],
+    "element_substitution": null
+  },
+  "target": {
+    "material_string": "MnSn2",
+    "material_formula": "MnSn2",
+    "material_name": "",
+    "phase": null,
+    "is_acronym": false,
+    "composition": [
+      {
+        "formula": "MnSn2",
+        "amount": "1",
+        "elements": {
+          "Mn": "1",
+          "Sn": "2"
+        }
+      }
+    ],
+    "amounts_vars": {},
+    "elements_vars": {},
+    "additives": [],
+    "oxygen_deficiency": "None"
+  },
+  "targets_formula": [
+    "Mn1 Sn2"
+  ],
+  "precursors_formula": null,
+  "targets_formula_s": [
+    "MnSn2"
+  ],
+  "precursors_formula_s": [
+    "Mn",
+    "Sn"
+  ],
+  "precursors": [
+    {
+      "material_string": "Mn",
+      "material_formula": "Mn",
+      "material_name": "",
+      "phase": null,
+      "is_acronym": false,
+      "composition": [
+        {
+          "formula": "Mn",
+          "amount": "1",
+          "elements": {
+            "Mn": "1"
+          }
+        }
+      ],
+      "amounts_vars": {},
+      "elements_vars": {},
+      "additives": [],
+      "oxygen_deficiency": "None"
+    },
+    {
+      "material_string": "Sn",
+      "material_formula": "Sn",
+      "material_name": "",
+      "phase": null,
+      "is_acronym": false,
+      "composition": [
+        {
+          "formula": "Sn",
+          "amount": "1",
+          "elements": {
+            "Sn": "1"
+          }
+        }
+      ],
+      "amounts_vars": {},
+      "elements_vars": {},
+      "additives": [],
+      "oxygen_deficiency": "None"
+    }
+  ],
+  "operations": [
+    {
+      "type": "StartingSynthesis",
+      "token": "prepared",
+      "conditions": {
+        "heating_temperature": [],
+        "heating_time": [],
+        "heating_atmosphere": [],
+        "mixing_device": null,
+        "mixing_media": null
+      }
+    },
+    {
+      "type": "HeatingOperation",
+      "token": "heated",
+      "conditions": {
+        "heating_temperature": [
+          {
+            "min_value": 500.0,
+            "max_value": 500.0,
+            "values": [
+              500.0
+            ],
+            "units": "\u00b0C"
+          }
+        ],
+        "heating_time": [
+          {
+            "min_value": 15.0,
+            "max_value": 15.0,
+            "values": [
+              15.0
+            ],
+            "units": "day"
+          }
+        ],
+        "heating_atmosphere": [
+          "water"
+        ],
+        "mixing_device": null,
+        "mixing_media": null
+      }
+    },
+    {
+      "type": "QuenchingOperation",
+      "token": "cooled",
+      "conditions": {
+        "heating_temperature": [],
+        "heating_time": [],
+        "heating_atmosphere": [],
+        "mixing_device": null,
+        "mixing_media": null
+      }
+    }
+  ],
+  "search_score": null,
+  "highlights": null,
+  "fields_not_requested": [
+    "precursors_formula",
+    "search_score",
+    "highlights"
+  ]
+}
