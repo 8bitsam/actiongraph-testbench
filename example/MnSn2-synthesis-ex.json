@@ -43,17 +43,10 @@
     "additives": [],
     "oxygen_deficiency": "None"
   },
-  "targets_formula": [
-    "Mn1 Sn2"
-  ],
+  "targets_formula": ["Mn1 Sn2"],
   "precursors_formula": null,
-  "targets_formula_s": [
-    "MnSn2"
-  ],
-  "precursors_formula_s": [
-    "Mn",
-    "Sn"
-  ],
+  "targets_formula_s": ["MnSn2"],
+  "precursors_formula_s": ["Mn", "Sn"],
   "precursors": [
     {
       "material_string": "Mn",
@@ -116,9 +109,7 @@
           {
             "min_value": 500.0,
             "max_value": 500.0,
-            "values": [
-              500.0
-            ],
+            "values": [500.0],
             "units": "\u00b0C"
           }
         ],
@@ -126,15 +117,11 @@
           {
             "min_value": 15.0,
             "max_value": 15.0,
-            "values": [
-              15.0
-            ],
+            "values": [15.0],
             "units": "day"
           }
         ],
-        "heating_atmosphere": [
-          "water"
-        ],
+        "heating_atmosphere": ["water"],
         "mixing_device": null,
         "mixing_media": null
       }
@@ -153,9 +140,5 @@
   ],
   "search_score": null,
   "highlights": null,
-  "fields_not_requested": [
-    "precursors_formula",
-    "search_score",
-    "highlights"
-  ]
+  "fields_not_requested": ["precursors_formula", "search_score", "highlights"]
 }
