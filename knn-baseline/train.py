@@ -15,10 +15,9 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import MultiLabelBinarizer, QuantileTransformer
 
 # --- Configuration ---
-DATA_DIR = "../Data/"
-FEATURIZED_DATA_DIR = os.path.join(
-    DATA_DIR, "featurized-data-baseline/"
-)  # Common features
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
+FEATURIZED_DATA_DIR = os.path.join(DATA_DIR, "featurized-data-baseline/")
 MODEL_BASE_DIR = os.path.join(DATA_DIR, "models")  # Base directory for models
 
 TEST_SIZE = 0.25  # 75% train, 25% test
@@ -26,9 +25,9 @@ RANDOM_STATE = 42
 # k-NN specific
 N_NEIGHBORS = 1
 RF_N_ESTIMATORS = 100
-RF_MAX_DEPTH = None  # Default
-RF_MIN_SAMPLES_SPLIT = 5  # Adjusted from default 2
-RF_N_JOBS = -1  # Use all available CPU cores
+RF_MAX_DEPTH = None
+RF_MIN_SAMPLES_SPLIT = 5
+RF_N_JOBS = -1
 
 
 def run_train(model_type="knn"):

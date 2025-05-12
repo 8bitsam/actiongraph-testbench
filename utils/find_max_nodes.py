@@ -1,8 +1,12 @@
 import json
 import os
 
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
+FILTERED_AG_DATA_DIR = os.path.join(DATA_DIR, "filtered-ag-data/")
 
-def find_max_nodes(ag_dir="../Data/filtered-ag-data/"):
+
+def find_max_nodes(ag_dir=FILTERED_AG_DATA_DIR):
     max_total = 0
     max_data = None
     for root, _, files in os.walk(ag_dir):

@@ -4,25 +4,15 @@ import argparse
 import sys
 import time
 
-# Ensure imports work correctly from the AG-specific versions
-try:
-    from evaluate import run_evaluate_ag
-    from featurize import run_featurize_ag
-    from train import run_train_ag
-except ImportError as e:
-    print(f"Error importing ActionGraph pipeline modules: {e}", file=sys.stderr)
-    print(
-        "Ensure featurize_ag.py, train_ag.py, evaluate_ag.py are accessible.",
-        file=sys.stderr,
-    )
-    sys.exit(1)
+from evaluate import run_evaluate_ag
+from featurize import run_featurize_ag
+from train import run_train_ag
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Inorganic Synthesis Prediction Pipeline (ActionGraph Version)"
+        description="Inorganic Synthesis Prediction Pipeline (ActionGraph data)"
     )
-    # For this AG strategy, model_type is effectively fixed to 'knn'
     parser.add_argument(
         "--model_type",
         type=str,
@@ -40,8 +30,7 @@ def main():
 
     args = parser.parse_args()
     steps_to_run = args.steps
-    model_type = args.model_type  # Will be 'knn'
-
+    model_type = args.model_type
     if model_type != "knn":
         print(
             f"Warning: This pipeline version is optimized for 'knn' with ActionGraph features. "
@@ -56,13 +45,11 @@ def main():
 
     success = True  # Track overall success
 
-    # Featurization (ActionGraph specific)
+    # ActionGraph-specific featurization
     if "all_ag" in steps_to_run or "featurize_ag" in steps_to_run:
         print("\n>>> Executing Featurize AG Step <<<")
         step_start_time = time.time()
-        if (
-            not run_featurize_ag()
-        ):  # run_featurize_ag is specific, doesn't need model_type
+        if not run_featurize_ag():
             print("Featurize AG step failed. Aborting pipeline.", file=sys.stderr)
             success = False
         else:
@@ -70,7 +57,7 @@ def main():
                 f"Featurize AG step finished in {time.time() - step_start_time:.2f} seconds."
             )
 
-    # Training (ActionGraph specific, k-NN model)
+    # Training
     if success and ("all_ag" in steps_to_run or "train_ag" in steps_to_run):
         print(f"\n>>> Executing Train AG Step ({model_type.upper()}) <<<")
         step_start_time = time.time()
@@ -82,7 +69,7 @@ def main():
                 f"Train AG step finished in {time.time() - step_start_time:.2f} seconds."
             )
 
-    # Evaluation (ActionGraph specific, k-NN model)
+    # Evaluation
     if success and ("all_ag" in steps_to_run or "evaluate_ag" in steps_to_run):
         print(f"\n>>> Executing Evaluate AG Step ({model_type.upper()}) <<<")
         step_start_time = time.time()
@@ -93,13 +80,11 @@ def main():
             print(
                 f"Evaluate AG step finished in {time.time() - step_start_time:.2f} seconds."
             )
-
     end_pipeline_time = time.time()
     print(f"\n--- ActionGraph Pipeline Finished (Success: {success}) ---")
     print(
         f"Total AG pipeline execution time: {end_pipeline_time - start_pipeline_time:.2f} seconds."
     )
-
     if not success:
         sys.exit(1)
 

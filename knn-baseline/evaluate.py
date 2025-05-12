@@ -11,7 +11,8 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 
 # --- Configuration ---
-DATA_DIR = "../Data/"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
 FEATURIZED_DATA_DIR = os.path.join(
     DATA_DIR, "featurized-data-baseline/"
 )  # Common features

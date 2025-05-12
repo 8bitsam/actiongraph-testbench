@@ -5,6 +5,10 @@ import re
 from pymatgen.core import Composition, Element
 
 VERBOSE_FILTERING = True
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
+MP_DATA_DIR = os.path.join(DATA_DIR, "mp-data/")
+FILTERED_MP_DATA_DIR = os.path.join(DATA_DIR, "filtered-mp-data/")
 
 
 def has_variable_subscripts(formula_str):
@@ -61,8 +65,8 @@ def has_variable_subscripts(formula_str):
 def filter_synthesis_data():
     """Filter synthesis data to include only reactions with constant
     subscripts."""
-    input_dir = "../Data/mp-data/"
-    output_dir = "../Data/filtered-mp-data/"
+    input_dir = MP_DATA_DIR
+    output_dir = FILTERED_MP_DATA_DIR
     os.makedirs(output_dir, exist_ok=True)
 
     json_files = [f for f in os.listdir(input_dir) if f.endswith(".json")]

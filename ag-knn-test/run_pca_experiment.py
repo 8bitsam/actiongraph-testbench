@@ -1,6 +1,4 @@
-# run_pca_experiment.py
-
-import argparse  # For command-line arguments
+import argparse
 import json
 import os
 import sys
@@ -18,7 +16,6 @@ from evaluate import run_evaluate_ag
 from featurize import run_featurize_ag
 from train import run_train_ag
 
-# --- Configuration for the Experiment ---
 PCA_COMPONENTS_RANGE = range(10, 31)
 RESULTS_DIR = os.path.abspath(
     os.path.join(current_dir, "..", "Data", "pca_experiment_results_pub/")
@@ -27,7 +24,6 @@ DEFAULT_RESULTS_JSON_FILENAME = "pca_experiment_f1_scores.json"
 
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
-# Publication Style Settings
 plt.style.use("seaborn-v0_8-whitegrid")
 PUB_FONT_SIZE_SMALL = 12
 PUB_FONT_SIZE_MEDIUM = 14
@@ -44,7 +40,6 @@ plt.rcParams.update(
 )
 
 
-# --- Plotting Function (can be called standalone) ---
 def plot_f1_vs_pca_from_data(
     pca_values, precursor_f1_scores, operation_f1_scores, output_dir
 ):
@@ -53,12 +48,8 @@ def plot_f1_vs_pca_from_data(
     PCA components plot.
     """
     print("\nPlotting F1 scores vs. PCA Components (Publication Style)...")
-    os.makedirs(output_dir, exist_ok=True)  # Ensure output directory for plot exists
-
+    os.makedirs(output_dir, exist_ok=True)
     plt.figure(figsize=(8, 5.5))
-
-    # Filter out NaN values for plotting if any iterations failed or data is incomplete
-    # Convert to numpy arrays for safe boolean indexing
     pca_values_arr = np.array(pca_values)
     precursor_f1_scores_arr = np.array(precursor_f1_scores)
     operation_f1_scores_arr = np.array(operation_f1_scores)
@@ -136,13 +127,10 @@ def plot_f1_vs_pca_from_data(
             plt.ylim(bottom=plot_bottom, top=plot_top)
         else:
             plt.ylim(bottom=0, top=1)
-
         plt.tight_layout()
-
         plot_save_path = os.path.join(output_dir, "pca_components_vs_f1_pub.png")
         plt.savefig(plot_save_path, dpi=PUB_FIGURE_DPI)
         print(f"Plot saved to {plot_save_path}")
-        # plt.show() # Commented out for batch runs
     else:
         print("No valid data points to plot.")
 
@@ -180,7 +168,6 @@ def plot_results_from_json(json_filepath, output_dir_for_plot):
     return True
 
 
-# --- Main Experiment Loop ---
 def run_full_experiment():
     print("--- Starting Full PCA Components Experiment ---")
 
@@ -226,12 +213,8 @@ def run_full_experiment():
             operation_f1_scores_collected.append(np.nan)
             continue
 
-        current_prec_f1 = eval_metrics.get(
-            "avg_precursors_f1", np.nan
-        )  # Use NaN if key missing
-        current_ops_f1 = eval_metrics.get(
-            "avg_op_type_f1", np.nan
-        )  # Use NaN if key missing
+        current_prec_f1 = eval_metrics.get("avg_precursors_f1", np.nan)
+        current_ops_f1 = eval_metrics.get("avg_op_type_f1", np.nan)
 
         print(f"Evaluation took {time.time() - start_time_step:.2f}s")
         print(
@@ -241,7 +224,7 @@ def run_full_experiment():
         precursor_f1_scores_collected.append(current_prec_f1)
         operation_f1_scores_collected.append(current_ops_f1)
 
-        time.sleep(0.2)  # Short pause, e.g. for file systems to catch up if needed
+        time.sleep(0.2)
 
     results_data_to_save = {
         "pca_components": pca_values_loop,
@@ -252,8 +235,6 @@ def run_full_experiment():
     with open(results_json_path, "w") as f:
         json.dump(results_data_to_save, f, indent=2)
     print(f"\nRaw F1 scores saved to {results_json_path}")
-
-    # Plot the results from the just-completed experiment
     plot_f1_vs_pca_from_data(
         pca_values_loop,
         precursor_f1_scores_collected,
@@ -287,7 +268,6 @@ if __name__ == "__main__":
         if not os.path.isabs(json_file_to_plot) and not os.path.exists(
             json_file_to_plot
         ):
-            # If relative path and not found, try constructing from RESULTS_DIR
             json_file_to_plot = os.path.join(RESULTS_DIR, json_file_to_plot)
 
         if not plot_results_from_json(json_file_to_plot, RESULTS_DIR):
@@ -298,7 +278,6 @@ if __name__ == "__main__":
     elif args.run_experiment:
         run_full_experiment()
     else:
-        # Default behavior: try to plot from default JSON if it exists, otherwise suggest running experiment
         default_json_path = os.path.join(RESULTS_DIR, DEFAULT_RESULTS_JSON_FILENAME)
         if os.path.exists(default_json_path):
             print(

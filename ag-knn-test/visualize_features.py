@@ -1,5 +1,3 @@
-# visualize_ag_features.py
-
 import json
 import os
 import sys
@@ -13,8 +11,8 @@ from pymatgen.core import Composition
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 
-# --- Configuration ---
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Data"))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
 FEATURIZED_DATA_DIR_AG = os.path.join(DATA_DIR, "featurized-data-actiongraph/")
 PLOTS_DIR_AG = os.path.join(DATA_DIR, "feature_plots_ag_pca_pub/")
 
@@ -36,13 +34,10 @@ PROPERTY_X_LABELS = {
     "ionization_energy": "Average Ionization Energy (eV)",
 }
 DEFAULT_X_LABEL = "Average Property Value"
-
 plt.style.use("seaborn-v0_8-whitegrid")
 PUB_FONT_SIZE_SMALL = 12
 PUB_FONT_SIZE_MEDIUM = 14
-# PUB_FONT_SIZE_LARGE = 16 # Not used for titles now
 PUB_FIGURE_DPI = 300
-
 plt.rcParams.update(
     {
         "font.size": PUB_FONT_SIZE_MEDIUM,
@@ -54,7 +49,6 @@ plt.rcParams.update(
 )
 
 
-# --- Load Data ---
 def load_ag_featurized_data(feature_dir_ag):
     print(f"Loading AG-PCA featurized data from: {feature_dir_ag}")
     try:
@@ -76,7 +70,6 @@ def load_ag_featurized_data(feature_dir_ag):
             print(
                 f"Warning: PCA model 'adj_pca.joblib' not found. PCA related plots might be affected or pca_n_components inferred."
             )
-            # pca_n_components remains 0 if not found
 
         print(
             f"Loaded {features_ag.shape[0]} AG samples with {features_ag.shape[1]} features."
@@ -99,9 +92,6 @@ def load_ag_featurized_data(feature_dir_ag):
         return None, None, None, None
 
 
-# --- Plotting Functions ---
-
-
 def plot_target_property_distributions_ag(
     features_ag, element_map, props_list, plots_dir
 ):
@@ -110,22 +100,18 @@ def plot_target_property_distributions_ag(
     )
     num_elements_in_map = len(element_map)
     num_props = len(props_list)
-
     target_prop_features_start_idx = num_elements_in_map
     target_prop_features_end_idx = num_elements_in_map + num_props
-
     if target_prop_features_end_idx > features_ag.shape[1]:
         print(
             f"Error: Index for target properties ({target_prop_features_end_idx}) exceeds feature dimension ({features_ag.shape[1]}).",
             file=sys.stderr,
         )
         return
-
     target_prop_features = features_ag[
         :, target_prop_features_start_idx:target_prop_features_end_idx
     ]
     os.makedirs(plots_dir, exist_ok=True)
-
     for i in range(num_props):
         prop_name = props_list[i]
         data_col = target_prop_features[:, i]
@@ -154,7 +140,6 @@ def plot_target_property_distributions_ag(
             )
             ax.set_xlabel(PROPERTY_X_LABELS.get(prop_name, DEFAULT_X_LABEL))
             ax.set_ylabel("Frequency")
-
         ax.grid(True, linestyle=":", alpha=0.6)
         plt.tight_layout()
         sanitized_prop_name = prop_name.replace("/", "_").replace("\\", "_")
@@ -162,9 +147,6 @@ def plot_target_property_distributions_ag(
         plt.savefig(save_path, dpi=PUB_FIGURE_DPI)
         print(f"  Saved property distribution for '{prop_name}' to {save_path}")
         plt.close(fig)
-
-
-# plot_pca_component_distributions_single_figure function is REMOVED
 
 
 def plot_pca_explained_variance(pca_model_path, plots_dir):
@@ -181,12 +163,10 @@ def plot_pca_explained_variance(pca_model_path, plots_dir):
                 "  Loaded PCA model does not have 'explained_variance_ratio_'. Skipping plot."
             )
             return
-
         explained_variance_ratio = pca.explained_variance_ratio_
         if len(explained_variance_ratio) == 0:
             print("  PCA explained variance ratio is empty. Skipping plot.")
             return
-
         plt.figure(figsize=(8, 5))
         plt.bar(
             range(1, len(explained_variance_ratio) + 1),
@@ -204,11 +184,9 @@ def plot_pca_explained_variance(pca_model_path, plots_dir):
             color="firebrick",
             linewidth=2,
         )
-
         plt.ylabel("Explained Variance Ratio")
         plt.xlabel("Principal Component Index")
         plt.legend(loc="best")
-
         num_components_to_show_ticks = len(explained_variance_ratio)
         tick_step = max(
             1,
@@ -220,16 +198,13 @@ def plot_pca_explained_variance(pca_model_path, plots_dir):
         )
         if num_components_to_show_ticks < 10 and num_components_to_show_ticks > 0:
             tick_step = 1
-
         if num_components_to_show_ticks > 0:
             plt.xticks(
                 ticks=np.arange(1, num_components_to_show_ticks + 1, step=tick_step)
             )
-
         plt.ylim(0, 1.05)
         plt.grid(True, linestyle=":", alpha=0.6)
         plt.tight_layout()
-
         save_path = os.path.join(plots_dir, "ag_pca_explained_variance.png")
         plt.savefig(save_path, dpi=PUB_FIGURE_DPI)
         print(f"Saved PCA explained variance plot to {save_path}")
@@ -245,7 +220,6 @@ def plot_tsne_projection_ag(
         f"\nPerforming t-SNE projection on AG features (on max {n_samples_tsne} samples)..."
     )
     os.makedirs(plots_dir, exist_ok=True)
-
     if features_ag.shape[0] == 0:
         return
     actual_n_samples = min(n_samples_tsne, features_ag.shape[0])
@@ -258,7 +232,6 @@ def plot_tsne_projection_ag(
     else:
         features_subset = features_ag
         targets_subset = targets_ag
-
     current_perplexity = perplexity_tsne
     if len(features_subset) <= current_perplexity:
         current_perplexity = max(5, len(features_subset) - 2)
@@ -269,7 +242,6 @@ def plot_tsne_projection_ag(
             )
             return
         print(f"  Adjusted t-SNE perplexity to {current_perplexity}.")
-
     print("  Scaling AG data for t-SNE...")
     scaler = StandardScaler()
     try:
@@ -281,7 +253,6 @@ def plot_tsne_projection_ag(
     except Exception as e:
         print(f"Error scaling for t-SNE: {e}", file=sys.stderr)
         return
-
     print(
         f"  Running t-SNE (perplexity={current_perplexity}, samples={scaled_features.shape[0]})..."
     )
@@ -308,7 +279,6 @@ def plot_tsne_projection_ag(
             num_elements_list.append(len(Composition(formula).elements))
         except:
             num_elements_list.append(0)
-
     scatter = plt.scatter(
         tsne_results[:, 0],
         tsne_results[:, 1],
@@ -318,7 +288,6 @@ def plot_tsne_projection_ag(
         s=15,
         edgecolor="none",
     )
-
     plt.xlabel("t-SNE Dimension 1")
     plt.ylabel("t-SNE Dimension 2")
     plt.xticks([])
@@ -339,7 +308,6 @@ def plot_tsne_projection_ag(
     plt.close()
 
 
-# --- Main Execution ---
 if __name__ == "__main__":
     print(
         "--- Running ActionGraph Feature Visualization (PCA version - No PCA Component Distributions) ---"
@@ -355,18 +323,11 @@ if __name__ == "__main__":
         and elem_map_ag is not None
         and target_formulas_ag is not None
     ):
-        # pca_n_components_loaded can be 0 if adj_pca.joblib not found or PCA was skipped.
-        # The value is primarily needed to verify feature dimensions.
-
         num_element_map_features = len(elem_map_ag)
         num_prop_features = len(ELEMENT_PROPS_LIST)
         num_total_target_chem_features = num_element_map_features + num_prop_features
-
-        # If pca_n_components_loaded is None (from load_ag_featurized_data error), default to 0
         if pca_n_components_loaded is None:
             pca_n_components_loaded = 0
-
-        # Final check of feature dimensions
         if (
             features_ag_arr.shape[1]
             != num_total_target_chem_features + pca_n_components_loaded
@@ -382,18 +343,11 @@ if __name__ == "__main__":
         plot_target_property_distributions_ag(
             features_ag_arr, elem_map_ag, ELEMENT_PROPS_LIST, PLOTS_DIR_AG
         )
-
-        # plot_pca_component_distributions_single_figure is REMOVED
-
         pca_model_filepath = os.path.join(FEATURIZED_DATA_DIR_AG, "adj_pca.joblib")
-        plot_pca_explained_variance(
-            pca_model_filepath, PLOTS_DIR_AG
-        )  # This will still run if adj_pca.joblib exists
-
+        plot_pca_explained_variance(pca_model_filepath, PLOTS_DIR_AG)
         plot_tsne_projection_ag(
             features_ag_arr, target_formulas_ag, PLOTS_DIR_AG, n_samples_tsne=2000
         )
-
         print("\nAG Feature Visualization script finished.")
     else:
         print("\nExiting AG feature visualization due to data loading failure.")

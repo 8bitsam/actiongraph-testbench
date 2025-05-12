@@ -11,7 +11,8 @@ import numpy as np
 from pymatgen.core import Composition, Element
 
 # --- Configuration ---
-DATA_DIR = "../Data/"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
 RAW_DATA_DIR = os.path.join(DATA_DIR, "filtered-mp-data/")
 FEATURIZED_DATA_DIR = os.path.join(DATA_DIR, "featurized-data-baseline/")
 

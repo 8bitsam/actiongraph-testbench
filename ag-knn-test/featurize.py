@@ -15,7 +15,8 @@ from sklearn.preprocessing import StandardScaler
 from actiongraph.actiongraph import ActionGraph
 
 # Path configuration
-DATA_DIR = "../Data/"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
 MP_DATA_DIR = os.path.join(DATA_DIR, "filtered-mp-data/")
 AG_DATA_DIR = os.path.join(DATA_DIR, "filtered-ag-data/")
 FEATURIZED_DATA_DIR_AG = os.path.join(DATA_DIR, "featurized-data-actiongraph/")

@@ -12,33 +12,10 @@ from pymatgen.core import Composition
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
 
-# import joblib # Not needed for base features usually
-
-# --- Configuration ---
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "Data"))
-
-# Choose the directory for your base featurized data
-# FEATURIZED_DATA_DIR = os.path.join(DATA_DIR, "featurized-data-weighted/")
-FEATURIZED_DATA_DIR = os.path.join(
-    DATA_DIR, "featurized-data-baseline/"
-)  # Or the original baseline
-
-PLOTS_DIR = os.path.join(DATA_DIR, "feature_plots_base_pub/")  # Directory to save plots
-
-# Elemental properties used in the base featurization (must match your base featurize.py)
-ELEMENT_PROPS_LIST = [
-    "atomic_mass",
-    "atomic_radius",
-    "atomic_volume",  # Or melting_point if you changed it
-    "X",  # Assuming 'X' for Pauling electronegativity was used
-    "electron_affinity",
-    "ionization_energy",
-]
-# Note: If your base featurize.py used 'electronegativity' and it resulted in zeros,
-# ensure this list and the PROPERTY_X_LABELS reflect the actual working properties.
-# For consistency with AG, let's assume it was updated to 'X' and 'melting_point' if atomic_volume was an issue.
-# If your base used 'atomic_volume' and 'electronegativity', adjust ELEMENT_PROPS_LIST and PROPERTY_X_LABELS here.
-# For this example, I'll use the same set as the AG visualization for consistency in labels.
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
+FEATURIZED_DATA_DIR = os.path.join(DATA_DIR, "featurized-data-baseline/")
+PLOTS_DIR = os.path.join(DATA_DIR, "feature_plots_base_pub/")
 ELEMENT_PROPS_LIST = [
     "atomic_mass",
     "atomic_radius",
@@ -48,25 +25,19 @@ ELEMENT_PROPS_LIST = [
     "ionization_energy",
 ]
 
-
 PROPERTY_X_LABELS = {
     "atomic_mass": "Average Atomic Mass (amu)",
     "atomic_radius": "Average Atomic Radius (pm)",
-    "atomic_volume": "Average Atomic Volume (Å³/atom)",  # If you used this
-    "melting_point": "Average Melting Point (K)",  # If you used this
+    "melting_point": "Average Melting Point (K)",
     "X": "Average Electronegativity (Pauling)",
-    "electronegativity": "Average Electronegativity",  # If you used this name
     "electron_affinity": "Average Electron Affinity (eV)",
     "ionization_energy": "Average Ionization Energy (eV)",
 }
 DEFAULT_X_LABEL = "Average Property Value"
-
-# Publication Style Settings
 plt.style.use("seaborn-v0_8-whitegrid")
 PUB_FONT_SIZE_SMALL = 12
 PUB_FONT_SIZE_MEDIUM = 14
 PUB_FIGURE_DPI = 300
-
 plt.rcParams.update(
     {
         "font.size": PUB_FONT_SIZE_MEDIUM,
@@ -78,7 +49,6 @@ plt.rcParams.update(
 )
 
 
-# --- Load Data ---
 def load_base_featurized_data(feature_dir):
     print(f"Loading base featurized data from: {feature_dir}")
     try:
@@ -100,17 +70,12 @@ def load_base_featurized_data(feature_dir):
         return None, None, None
 
 
-# --- Plotting Functions ---
-
-
 def plot_property_distributions_base(features, element_map, props_list, plots_dir):
     print(
         "\nPlotting individual distributions of averaged elemental properties (Base k-NN)..."
     )
     num_elements_in_map = len(element_map)
     num_props = len(props_list)
-
-    # Base features are typically [element_comp_vector, averaged_props_vector]
     expected_dims = num_elements_in_map + num_props
     if features.shape[1] != expected_dims:
         print(
@@ -119,17 +84,12 @@ def plot_property_distributions_base(features, element_map, props_list, plots_di
         )
         return
 
-    prop_features_data = features[
-        :, num_elements_in_map:
-    ]  # Extract only property columns
+    prop_features_data = features[:, num_elements_in_map:]
     os.makedirs(plots_dir, exist_ok=True)
-
     for i in range(num_props):
         prop_name = props_list[i]
         data_col = prop_features_data[:, i]
-
         fig, ax = plt.subplots(figsize=(6, 4.5))
-
         if len(data_col) > 0:
             sns.histplot(
                 data_col,
@@ -152,7 +112,6 @@ def plot_property_distributions_base(features, element_map, props_list, plots_di
             )
             ax.set_xlabel(PROPERTY_X_LABELS.get(prop_name, DEFAULT_X_LABEL))
             ax.set_ylabel("Frequency")
-
         ax.grid(True, linestyle=":", alpha=0.6)
         plt.tight_layout()
         sanitized_prop_name = prop_name.replace("/", "_").replace("\\", "_")
@@ -169,7 +128,6 @@ def plot_tsne_projection_base(
         f"\nPerforming t-SNE projection on Base features (on max {n_samples_tsne} samples)..."
     )
     os.makedirs(plots_dir, exist_ok=True)
-
     if features.shape[0] == 0:
         return
     actual_n_samples = min(n_samples_tsne, features.shape[0])
@@ -180,7 +138,6 @@ def plot_tsne_projection_base(
     else:
         features_subset = features
         targets_subset = targets
-
     current_perplexity = perplexity_tsne
     if len(features_subset) <= current_perplexity:
         current_perplexity = max(5, len(features_subset) - 2)
@@ -191,13 +148,8 @@ def plot_tsne_projection_base(
             )
             return
         print(f"  Adjusted t-SNE perplexity to {current_perplexity}.")
-
     print("  Scaling Base data for t-SNE using StandardScaler...")
-    scaler = (
-        StandardScaler()
-    )  # For base k-NN, QuantileTransformer might have been used in train.
-    # Using StandardScaler here for visualization consistency, or load the actual scaler.
-    # For visualization, StandardScaler is generally fine.
+    scaler = StandardScaler()
     try:
         scaled_features = scaler.fit_transform(features_subset)
         if np.any(~np.isfinite(scaled_features)):
@@ -207,7 +159,6 @@ def plot_tsne_projection_base(
     except Exception as e:
         print(f"Error scaling Base data for t-SNE: {e}", file=sys.stderr)
         return
-
     print(
         f"  Running t-SNE on Base features (perplexity={current_perplexity}, samples={scaled_features.shape[0]})..."
     )
@@ -226,7 +177,6 @@ def plot_tsne_projection_base(
         print(f"Error during t-SNE: {e_tsne}", file=sys.stderr)
         return
     print(f"  t-SNE finished in {time.time() - start_tsne_time:.2f} seconds.")
-
     plt.figure(figsize=(7, 6))
     num_elements_list = []
     for formula in targets_subset:
@@ -234,7 +184,6 @@ def plot_tsne_projection_base(
             num_elements_list.append(len(Composition(formula).elements))
         except:
             num_elements_list.append(0)
-
     scatter = plt.scatter(
         tsne_results[:, 0],
         tsne_results[:, 1],
@@ -243,8 +192,7 @@ def plot_tsne_projection_base(
         alpha=0.65,
         s=15,
         edgecolor="none",
-    )  # Different cmap
-
+    )
     plt.xlabel("t-SNE Dimension 1")
     plt.ylabel("t-SNE Dimension 2")
     plt.xticks([])
@@ -265,7 +213,6 @@ def plot_tsne_projection_base(
     plt.close()
 
 
-# --- Main Execution ---
 if __name__ == "__main__":
     print("--- Running Base Feature Visualization (Publication Style) ---")
     os.makedirs(PLOTS_DIR, exist_ok=True)
@@ -279,13 +226,6 @@ if __name__ == "__main__":
         and elem_map is not None
         and target_formulas is not None
     ):
-
-        # Ensure ELEMENT_PROPS_LIST matches what was used for featurize.py for this data
-        # For example, if the 'featurized-data-baseline/' used ['atomic_mass', ..., 'ionization_energy']
-        # this list should match exactly. The current ELEMENT_PROPS_LIST is set up for the AG version.
-        # You MUST verify this list against the actual featurize.py that produced the data in FEATURIZED_DATA_DIR.
-
-        # Assuming ELEMENT_PROPS_LIST defined at the top is correct for the loaded data:
         plot_property_distributions_base(
             features_arr, elem_map, ELEMENT_PROPS_LIST, PLOTS_DIR
         )
