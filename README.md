@@ -4,7 +4,9 @@ See paper: "Representation of Inorganic Synthesis Reactions and Prediction: Grap
 
 ## Data Availability
 
-The data set used in this paper can be obtained either directly by running the code (see the "Creating Data Sets" section). Or at [LINK HERE]()
+The data set used in this paper can be obtained either directly by running the code (see the "Creating Data Sets" section). An alternative is to download it directly at [https://www.kaggle.com/datasets/samandrello/actiongraph-inorganic-synthesis](kaggle).
+
+If you download it this way, ensure the data (`json` files) are placed directly at `Data/filtered-ag-data` (with the top-level directory being this repository).
 
 ## Running Code
 
