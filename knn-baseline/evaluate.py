@@ -1,6 +1,4 @@
-# evaluate.py
-
-import argparse  # Added
+import argparse
 import json
 import os
 import sys
@@ -10,19 +8,16 @@ import joblib
 import numpy as np
 from sklearn.model_selection import train_test_split
 
-# --- Configuration ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
-FEATURIZED_DATA_DIR = os.path.join(
-    DATA_DIR, "featurized-data-baseline/"
-)  # Common features
-MODEL_BASE_DIR = os.path.join(DATA_DIR, "models")  # Base directory for models
+FEATURIZED_DATA_DIR = os.path.join(DATA_DIR, "featurized-data-baseline/")
+MODEL_BASE_DIR = os.path.join(DATA_DIR, "models")
 
-TEST_SIZE = 0.25  # Must match the split used in train.py
-RANDOM_STATE = 42  # Must match the split used in train.py
+# Must match train.py
+TEST_SIZE = 0.25
+RANDOM_STATE = 42
 
 
-# --- Helper Functions (calculate_prf1, compare_recipes_detailed) ---
 def calculate_prf1(pred_set, true_set):
     """Calculates Precision, Recall, and F1 score for two sets."""
     if not isinstance(pred_set, set):
@@ -136,7 +131,8 @@ def compare_recipes_detailed(pred_recipe, true_recipe, is_rf=False):
     if union_ops > 0:
         results["operations_type_jaccard"] = intersection_ops / union_ops
     op_p, op_r, op_f1 = calculate_prf1(pred_op_types, true_op_types)
-    results["op_type_precision"], results["op_type_recall"], results["op_type_f1"] = (
+    results["op_type_precision"], results["op_type_recall"],
+    results["op_type_f1"] = (
         op_p,
         op_r,
         op_f1,
@@ -152,12 +148,8 @@ def compare_recipes_detailed(pred_recipe, true_recipe, is_rf=False):
 def run_evaluate(model_type="knn"):
     """Loads specified model, scaler, test data, evaluates predictions."""
     print(f"--- Running Evaluation Step (Model: {model_type.upper()}) ---")
-
-    # --- Define model-specific directory ---
     MODEL_DIR = os.path.join(MODEL_BASE_DIR, f"{model_type}-model")
     print(f"Loading model artifacts from: {MODEL_DIR}")
-
-    # --- Load Featurized Data ---
     print(f"\nLoading featurized data from: {FEATURIZED_DATA_DIR}")
     try:
         X = np.load(os.path.join(FEATURIZED_DATA_DIR, "features.npy"))
@@ -170,11 +162,15 @@ def run_evaluate(model_type="knn"):
         if not (
             len(X) == len(all_recipes) == len(all_targets) == len(all_original_indices)
         ):
-            raise ValueError("Mismatch between loaded featurized data lengths.")
+            raise ValueError(
+                "Mismatch between loaded featurized \
+                             data lengths."
+            )
         print(f"Loaded {len(X)} total samples.")
     except FileNotFoundError:
         print(
-            f"Error: Featurized data not found in {FEATURIZED_DATA_DIR}. Run 'featurize'.",
+            f"Error: Featurized data not found in \
+                {FEATURIZED_DATA_DIR}. Run 'featurize'.",
             file=sys.stderr,
         )
         return False
@@ -182,24 +178,19 @@ def run_evaluate(model_type="knn"):
         print(f"Error loading featurized data: {e}", file=sys.stderr)
         return False
 
-    # --- Load Model Artifacts ---
     model_artifacts = {}
     try:
-        # Load common scaler
         model_artifacts["scaler"] = joblib.load(
             os.path.join(MODEL_DIR, "scaler.joblib")
         )
-        # Load model-specific artifacts
         if model_type == "knn":
             model_artifacts["knn_model"] = joblib.load(
                 os.path.join(MODEL_DIR, "knn_model.joblib")
             )
-            # Load train indices needed to map neighbor index to recipe
             model_artifacts["train_indices"] = joblib.load(
                 os.path.join(MODEL_DIR, "train_indices.joblib")
             )
         elif model_type == "rf":
-            # Load potentially optional models/binarizers
             if os.path.exists(os.path.join(MODEL_DIR, "rf_prec_model.joblib")):
                 model_artifacts["rf_prec_model"] = joblib.load(
                     os.path.join(MODEL_DIR, "rf_prec_model.joblib")
@@ -221,44 +212,39 @@ def run_evaluate(model_type="knn"):
 
     except FileNotFoundError:
         print(
-            f"Error: Model artifacts not found in {MODEL_DIR}. Run 'train --model_type {model_type}'.",
+            f"Error: Model artifacts not found in {MODEL_DIR}. \
+                Run 'train --model_type {model_type}'.",
             file=sys.stderr,
         )
         return False
     except Exception as e:
         print(f"Error loading model artifacts: {e}", file=sys.stderr)
         return False
-
-    # --- Train/Test Split ---
     print(
-        f"\nRecreating train/test split (Test size: {TEST_SIZE}, Random State: {RANDOM_STATE})..."
+        f"\nRecreating train/test split (Test size: {TEST_SIZE}, \
+            Random State: {RANDOM_STATE})..."
     )
     if len(X) < 2:
         print("Error: Not enough data points (< 2) for split.", file=sys.stderr)
         return False
 
     indices = np.arange(len(X))
-    # Split features and original indices/targets
-    X_train, X_test, train_orig_indices_all, test_orig_indices_all = train_test_split(
+    _, X_test, _, test_orig_indices_all = train_test_split(
         X, indices, test_size=TEST_SIZE, random_state=RANDOM_STATE
     )
-
-    # Get the data corresponding to the test set indices
     y_test_recipes = [all_recipes[i] for i in test_orig_indices_all]
     y_test_targets = [all_targets[i] for i in test_orig_indices_all]
-    test_original_ids = [
-        all_original_indices[i] for i in test_orig_indices_all
-    ]  # Renamed for clarity
+    test_original_ids = [all_original_indices[i] for i in test_orig_indices_all]
 
     print(f"Test set size: {len(X_test)}")
     if len(X_test) == 0:
         print(
-            "Warning: Test set has size 0 after split. Evaluation cannot proceed.",
+            "Warning: Test set has size 0 after split. \
+                Evaluation cannot proceed.",
             file=sys.stderr,
         )
         return True
 
-    # --- Scale Test Features ---
     print("\nScaling test features using loaded scaler...")
     start_scale_time = time.time()
     scaler = model_artifacts["scaler"]
@@ -266,29 +252,24 @@ def run_evaluate(model_type="knn"):
     X_test_scaled = np.nan_to_num(X_test_scaled, nan=0.0, posinf=0.0, neginf=0.0)
     end_scale_time = time.time()
     print(f"Scaling took {end_scale_time - start_scale_time:.2f} seconds.")
-
-    # --- Make Predictions ---
-    print(f"\nPredicting recipes for the test set using {model_type.upper()} model...")
-    predictions = []  # List to store predicted recipe structures/info
+    print(
+        f"\nPredicting recipes for the test set using \
+          {model_type.upper()} model..."
+    )
+    predictions = []
     start_predict_time = time.time()
 
     if model_type == "knn":
         knn_model = model_artifacts["knn_model"]
-        train_indices = model_artifacts[
-            "train_indices"
-        ]  # Indices of training samples within all_recipes
-        y_train_recipes = [
-            all_recipes[i] for i in train_indices
-        ]  # Get actual training recipes
+        train_indices = model_artifacts["train_indices"]
+        y_train_recipes = [all_recipes[i] for i in train_indices]
 
         distances_all, neighbor_idx_in_train_all = knn_model.kneighbors(X_test_scaled)
 
         for i in range(len(X_test_scaled)):
             nearest_train_list_index = neighbor_idx_in_train_all[i][0]
-            # k-NN prediction is the *entire recipe* of the neighbor
             predicted_recipe = y_train_recipes[nearest_train_list_index]
             predictions.append(predicted_recipe)
-            # Add neighbor details if needed for examples (optional)
 
     elif model_type == "rf":
         pred_prec_multi = None
@@ -317,10 +298,8 @@ def run_evaluate(model_type="knn"):
         for i in range(len(X_test_scaled)):
             pred_prec_set = set()
             if pred_prec_multi is not None and prec_binarizer:
-                # Handle potential IndexError if prediction failed for a sample
                 if i < len(pred_prec_multi):
                     try:
-                        # inverse_transform expects 2D array, returns list of tuples
                         pred_prec_tuple = prec_binarizer.inverse_transform(
                             pred_prec_multi[i].reshape(1, -1)
                         )
@@ -328,12 +307,14 @@ def run_evaluate(model_type="knn"):
                             pred_prec_set = set(pred_prec_tuple[0])
                     except ValueError as e:
                         print(
-                            f"Warning: Error transforming precursor prediction for sample {i}: {e}",
+                            f"Warning: Error transforming precursor \
+                                prediction for sample {i}: {e}",
                             file=sys.stderr,
                         )
                 else:
                     print(
-                        f"Warning: Missing precursor prediction for sample {i}.",
+                        f"Warning: Missing precursor prediction for \
+                            sample {i}.",
                         file=sys.stderr,
                     )
 
@@ -348,36 +329,32 @@ def run_evaluate(model_type="knn"):
                             pred_op_type_set = set(pred_op_type_tuple[0])
                     except ValueError as e:
                         print(
-                            f"Warning: Error transforming op_type prediction for sample {i}: {e}",
+                            f"Warning: Error transforming op_type \
+                                prediction for sample {i}: {e}",
                             file=sys.stderr,
                         )
                 else:
                     print(
-                        f"Warning: Missing op_type prediction for sample {i}.",
+                        f"Warning: Missing op_type prediction \
+                            for sample {i}.",
                         file=sys.stderr,
                     )
-
-            # Store prediction as a dictionary containing *only* the predicted sets
-            # This structure is compatible with compare_recipes_detailed
             predictions.append(
                 {
                     "precursors": [{"material_formula": p} for p in pred_prec_set],
-                    "operations": [
-                        {"type": op} for op in pred_op_type_set
-                    ],  # Structure for comparison func
+                    "operations": [{"type": op} for op in pred_op_type_set],
                 }
             )
-
     else:
         print(
             f"Error: Unknown model_type '{model_type}' for prediction.", file=sys.stderr
         )
         return False
-
     end_predict_time = time.time()
-    print(f"Prediction took {end_predict_time - start_predict_time:.2f} seconds.")
-
-    # --- Evaluate Predictions ---
+    print(
+        f"Prediction took {end_predict_time - start_predict_time:.2f} \
+          seconds."
+    )
     print("\nEvaluating predictions with detailed metrics...")
     start_eval_time = time.time()
     evaluation_results = []
@@ -388,9 +365,10 @@ def run_evaluate(model_type="knn"):
         eval_metrics = compare_recipes_detailed(pred_recipe, true_recipe, is_rf=is_rf)
         evaluation_results.append(eval_metrics)
     end_eval_time = time.time()
-    print(f"Evaluation calculation took {end_eval_time - start_eval_time:.2f} seconds.")
-
-    # --- Aggregate and Print Results ---
+    print(
+        f"Evaluation calculation took \
+          {end_eval_time - start_eval_time:.2f} seconds."
+    )
     avg_results = {}
     if evaluation_results:
         metric_keys = list(evaluation_results[0].keys())
@@ -414,59 +392,75 @@ def run_evaluate(model_type="knn"):
     print(f"Test Set Size: {len(predictions)}")
     print("\n-- Precursor Metrics --")
     print(
-        f"{'avg_precursors_exact_match':<30}: {avg_results.get('avg_precursors_exact_match', 'N/A'):.4f}"
+        f"{'avg_precursors_exact_match':<30}: \
+            {avg_results.get('avg_precursors_exact_match', 'N/A'):.4f}"
     )
     print(
-        f"{'avg_precursors_formula_jaccard':<30}: {avg_results.get('avg_precursors_formula_jaccard', 'N/A'):.4f}"
+        f"{'avg_precursors_formula_jaccard':<30}: \
+            {avg_results.get('avg_precursors_formula_jaccard', 'N/A'):.4f}"
     )
     print(
-        f"{'avg_precursors_precision':<30}: {avg_results.get('avg_precursors_precision', 'N/A'):.4f}"
+        f"{'avg_precursors_precision':<30}: \
+            {avg_results.get('avg_precursors_precision', 'N/A'):.4f}"
     )
     print(
-        f"{'avg_precursors_recall':<30}: {avg_results.get('avg_precursors_recall', 'N/A'):.4f}"
+        f"{'avg_precursors_recall':<30}: \
+            {avg_results.get('avg_precursors_recall', 'N/A'):.4f}"
     )
     print(
-        f"{'avg_precursors_f1':<30}: {avg_results.get('avg_precursors_f1', 'N/A'):.4f}"
+        f"{'avg_precursors_f1':<30}: \
+            {avg_results.get('avg_precursors_f1', 'N/A'):.4f}"
     )
 
     print("\n-- Operation Metrics --")
-    # Note which metrics are less applicable to RF
     exact_match_note = "(Not applicable for RF)" if is_rf else ""
     length_match_note = "(Not applicable for RF)" if is_rf else ""
     print(
-        f"{'avg_operations_exact_match':<30}: {avg_results.get('avg_operations_exact_match', 'N/A'):.4f} {exact_match_note}"
+        f"{'avg_operations_exact_match':<30}: \
+            {avg_results.get('avg_operations_exact_match', 'N/A'):.4f} \
+                {exact_match_note}"
     )
     print(
-        f"{'avg_operations_length_match':<30}: {avg_results.get('avg_operations_length_match', 'N/A'):.4f} {length_match_note}"
+        f"{'avg_operations_length_match':<30}: \
+            {avg_results.get('avg_operations_length_match', 'N/A'):.4f} \
+                {length_match_note}"
     )
     print(
-        f"{'avg_operations_type_jaccard':<30}: {avg_results.get('avg_operations_type_jaccard', 'N/A'):.4f}"
+        f"{'avg_operations_type_jaccard':<30}: \
+            {avg_results.get('avg_operations_type_jaccard', 'N/A'):.4f}"
     )
     print(
-        f"{'avg_op_type_precision':<30}: {avg_results.get('avg_op_type_precision', 'N/A'):.4f}"
+        f"{'avg_op_type_precision':<30}: \
+            {avg_results.get('avg_op_type_precision', 'N/A'):.4f}"
     )
     print(
-        f"{'avg_op_type_recall':<30}: {avg_results.get('avg_op_type_recall', 'N/A'):.4f}"
+        f"{'avg_op_type_recall':<30}: \
+            {avg_results.get('avg_op_type_recall', 'N/A'):.4f}"
     )
-    print(f"{'avg_op_type_f1':<30}: {avg_results.get('avg_op_type_f1', 'N/A'):.4f}")
+    print(
+        f"{'avg_op_type_f1':<30}: \
+          {avg_results.get('avg_op_type_f1', 'N/A'):.4f}"
+    )
 
     if model_type == "knn":
         print("\n-- Note on Top-K Metrics --")
-        print("k-NN uses k=1, retrieving only the single most similar recipe.")
+        print("k-NN uses k=1, retrieving only the single " "most similar recipe.")
         print(
-            "P/R/F1 scores evaluate the accuracy of the retrieved sets from that neighbor."
+            "P/R/F1 scores evaluate the accuracy of the "
+            "retrieved sets from that neighbor."
         )
 
-    # --- Show Example ---
     print("\n--- Example Prediction ---")
     if len(predictions) > 0:
         example_idx_in_test = 0
         print(
-            f"Test Entry Original Identifier: {test_original_ids[example_idx_in_test]}"
+            f"Test Entry Original Identifier: \
+                {test_original_ids[example_idx_in_test]}"
         )
-        print(f"Test Target Formula         : {y_test_targets[example_idx_in_test]}")
-        # Add neighbor info for k-NN example if desired
-
+        print(
+            f"Test Target Formula         : \
+              {y_test_targets[example_idx_in_test]}"
+        )
         print("\nPredicted Recipe/Components:")
         print(json.dumps(predictions[example_idx_in_test], indent=2))
         print("\nTrue Recipe:")

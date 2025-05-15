@@ -134,7 +134,8 @@ class ActionGraph(nx.DiGraph):
                     pass
             elif "min_value" in entry and "max_value" in entry:
                 try:
-                    min_v, max_v = float(entry["min_value"]), float(entry["max_value"])
+                    min_v, max_v = (float(entry["min_value"]),)
+                    float(entry["max_value"])
                     values.extend(sorted(list(set([min_v, max_v]))))
                 except (ValueError, TypeError):
                     pass
@@ -421,9 +422,8 @@ class ActionGraph(nx.DiGraph):
                 reconstructed_graph.add_node(node_id, **attrs)
             links_data_list = data.get(edge_key, [])
             for link_item in links_data_list:
-                source_orig, target_orig = link_item.get("source"), link_item.get(
-                    "target"
-                )
+                source_orig, target_orig = (link_item.get("source"),)
+                link_item.get("target")
                 source_id, target_id = node_id_map.get(
                     source_orig, str(source_orig)
                 ), node_id_map.get(target_orig, str(target_orig))

@@ -68,22 +68,27 @@ def load_ag_featurized_data(feature_dir_ag):
                 pca_n_components = pca_model.n_components_
         else:
             print(
-                f"Warning: PCA model 'adj_pca.joblib' not found. PCA related plots might be affected or pca_n_components inferred."
+                f"Warning: PCA model 'adj_pca.joblib' not found. \
+                    PCA related plots might be affected or \
+                        pca_n_components inferred."
             )
 
         print(
-            f"Loaded {features_ag.shape[0]} AG samples with {features_ag.shape[1]} features."
+            f"Loaded {features_ag.shape[0]} AG samples with \
+                {features_ag.shape[1]} features."
         )
         if pca_n_components > 0:
             print(f"  PCA components from loaded model: {pca_n_components}")
         elif os.path.exists(pca_model_path):
             print(
-                f"  PCA model 'adj_pca.joblib' loaded, but n_components_ is 0 or not set as expected."
+                f"  PCA model 'adj_pca.joblib' loaded, but n_components_ is \
+                    0 or not set as expected."
             )
         return features_ag, element_map_ag, targets_ag, pca_n_components
     except FileNotFoundError as e:
         print(
-            f"Error: Featurized AG data or PCA model not found in {feature_dir_ag}. File: {e.filename}",
+            f"Error: Featurized AG data or PCA model not found in \
+                {feature_dir_ag}. File: {e.filename}",
             file=sys.stderr,
         )
         return None, None, None, None
@@ -96,7 +101,8 @@ def plot_target_property_distributions_ag(
     features_ag, element_map, props_list, plots_dir
 ):
     print(
-        "\nPlotting individual distributions of TARGET averaged elemental properties..."
+        "\nPlotting individual distributions of TARGET averaged \
+            elemental properties..."
     )
     num_elements_in_map = len(element_map)
     num_props = len(props_list)
@@ -104,7 +110,9 @@ def plot_target_property_distributions_ag(
     target_prop_features_end_idx = num_elements_in_map + num_props
     if target_prop_features_end_idx > features_ag.shape[1]:
         print(
-            f"Error: Index for target properties ({target_prop_features_end_idx}) exceeds feature dimension ({features_ag.shape[1]}).",
+            f"Error: Index for target properties \
+                ({target_prop_features_end_idx}) exceeds feature \
+                    dimension ({features_ag.shape[1]}).",
             file=sys.stderr,
         )
         return
@@ -145,7 +153,10 @@ def plot_target_property_distributions_ag(
         sanitized_prop_name = prop_name.replace("/", "_").replace("\\", "_")
         save_path = os.path.join(plots_dir, f"prop_dist_{sanitized_prop_name}.png")
         plt.savefig(save_path, dpi=PUB_FIGURE_DPI)
-        print(f"  Saved property distribution for '{prop_name}' to {save_path}")
+        print(
+            f"  Saved property distribution for \
+              '{prop_name}' to {save_path}"
+        )
         plt.close(fig)
 
 
@@ -153,14 +164,16 @@ def plot_pca_explained_variance(pca_model_path, plots_dir):
     print("\nPlotting PCA Explained Variance...")
     if not os.path.exists(pca_model_path):
         print(
-            f"  PCA model file not found at {pca_model_path}. Skipping explained variance plot."
+            f"  PCA model file not found at {pca_model_path}. \
+                Skipping explained variance plot."
         )
         return
     try:
         pca = joblib.load(pca_model_path)
         if not hasattr(pca, "explained_variance_ratio_"):
             print(
-                "  Loaded PCA model does not have 'explained_variance_ratio_'. Skipping plot."
+                "  Loaded PCA model does not have \
+                    'explained_variance_ratio_'. Skipping plot."
             )
             return
         explained_variance_ratio = pca.explained_variance_ratio_
@@ -217,7 +230,8 @@ def plot_tsne_projection_ag(
     features_ag, targets_ag, plots_dir, n_samples_tsne=2000, perplexity_tsne=30
 ):
     print(
-        f"\nPerforming t-SNE projection on AG features (on max {n_samples_tsne} samples)..."
+        f"\nPerforming t-SNE projection on AG features (on max \
+            {n_samples_tsne} samples)..."
     )
     os.makedirs(plots_dir, exist_ok=True)
     if features_ag.shape[0] == 0:
@@ -237,7 +251,8 @@ def plot_tsne_projection_ag(
         current_perplexity = max(5, len(features_subset) - 2)
         if current_perplexity < 5:
             print(
-                f"  Skipping t-SNE: Samples ({len(features_subset)}) too few for perplexity {current_perplexity}.",
+                f"  Skipping t-SNE: Samples ({len(features_subset)}) too few \
+                    for perplexity {current_perplexity}.",
                 file=sys.stderr,
             )
             return
@@ -254,7 +269,8 @@ def plot_tsne_projection_ag(
         print(f"Error scaling for t-SNE: {e}", file=sys.stderr)
         return
     print(
-        f"  Running t-SNE (perplexity={current_perplexity}, samples={scaled_features.shape[0]})..."
+        f"  Running t-SNE (perplexity={current_perplexity}, \
+            samples={scaled_features.shape[0]})..."
     )
     start_tsne_time = time.time()
     tsne = TSNE(
@@ -310,7 +326,8 @@ def plot_tsne_projection_ag(
 
 if __name__ == "__main__":
     print(
-        "--- Running ActionGraph Feature Visualization (PCA version - No PCA Component Distributions) ---"
+        "--- Running ActionGraph Feature Visualization (PCA version - \
+            No PCA Component Distributions) ---"
     )
     os.makedirs(PLOTS_DIR_AG, exist_ok=True)
 
@@ -333,7 +350,11 @@ if __name__ == "__main__":
             != num_total_target_chem_features + pca_n_components_loaded
         ):
             print(
-                f"CRITICAL ERROR: Loaded feature dimension ({features_ag_arr.shape[1]}) does not match expected sum of chemical features ({num_total_target_chem_features}) and PCA components ({pca_n_components_loaded})."
+                f"CRITICAL ERROR: Loaded feature dimension \
+                    ({features_ag_arr.shape[1]}) does not match expected \
+                    sum of chemical features \
+                    ({num_total_target_chem_features}) and \
+                    PCA components ({pca_n_components_loaded})."
             )
             print(
                 "  Please check feature generation script (featurize.py) and constants here."
@@ -350,5 +371,8 @@ if __name__ == "__main__":
         )
         print("\nAG Feature Visualization script finished.")
     else:
-        print("\nExiting AG feature visualization due to data loading failure.")
+        print(
+            "\nExiting AG feature visualization due to data loading \
+              failure."
+        )
         sys.exit(1)

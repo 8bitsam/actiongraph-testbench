@@ -1,5 +1,3 @@
-# pipeline_ag.py
-
 import argparse
 import sys
 import time
@@ -11,7 +9,8 @@ from train import run_train_ag
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Inorganic Synthesis Prediction Pipeline (ActionGraph data)"
+        description="Inorganic Synthesis Prediction \
+            Pipeline (ActionGraph data)"
     )
     parser.add_argument(
         "--model_type",
@@ -33,14 +32,18 @@ def main():
     model_type = args.model_type
     if model_type != "knn":
         print(
-            f"Warning: This pipeline version is optimized for 'knn' with ActionGraph features. "
+            f"Warning: This pipeline version is optimized for 'knn' \
+                with ActionGraph features. "
             f"Specified model_type '{model_type}' will proceed as 'knn'.",
             file=sys.stderr,
         )
         model_type = "knn"
 
     start_pipeline_time = time.time()
-    print(f"--- Starting ActionGraph Pipeline (Model: {model_type.upper()}) ---")
+    print(
+        f"--- Starting ActionGraph Pipeline (Model: \
+          {model_type.upper()}) ---"
+    )
     print(f"Steps to run: {', '.join(steps_to_run)}")
 
     success = True  # Track overall success
@@ -54,36 +57,40 @@ def main():
             success = False
         else:
             print(
-                f"Featurize AG step finished in {time.time() - step_start_time:.2f} seconds."
+                f"Featurize AG step finished in \
+                    {time.time() - step_start_time:.2f} seconds."
             )
 
     # Training
     if success and ("all_ag" in steps_to_run or "train_ag" in steps_to_run):
         print(f"\n>>> Executing Train AG Step ({model_type.upper()}) <<<")
         step_start_time = time.time()
-        if not run_train_ag(model_type=model_type):  # Pass model_type (knn)
+        if not run_train_ag(model_type=model_type):
             print("Train AG step failed. Aborting subsequent steps.", file=sys.stderr)
             success = False
         else:
             print(
-                f"Train AG step finished in {time.time() - step_start_time:.2f} seconds."
+                f"Train AG step finished in \
+                    {time.time() - step_start_time:.2f} seconds."
             )
 
     # Evaluation
     if success and ("all_ag" in steps_to_run or "evaluate_ag" in steps_to_run):
         print(f"\n>>> Executing Evaluate AG Step ({model_type.upper()}) <<<")
         step_start_time = time.time()
-        if not run_evaluate_ag(model_type=model_type):  # Pass model_type (knn)
+        if not run_evaluate_ag(model_type=model_type):
             print("Evaluate AG step failed.", file=sys.stderr)
             success = False
         else:
             print(
-                f"Evaluate AG step finished in {time.time() - step_start_time:.2f} seconds."
+                f"Evaluate AG step finished in \
+                    {time.time() - step_start_time:.2f} seconds."
             )
     end_pipeline_time = time.time()
     print(f"\n--- ActionGraph Pipeline Finished (Success: {success}) ---")
     print(
-        f"Total AG pipeline execution time: {end_pipeline_time - start_pipeline_time:.2f} seconds."
+        f"Total AG pipeline execution time: \
+            {end_pipeline_time - start_pipeline_time:.2f} seconds."
     )
     if not success:
         sys.exit(1)

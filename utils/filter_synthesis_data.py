@@ -16,11 +16,14 @@ def has_variable_subscripts(formula_str):
     elements, or is invalid."""
     if not formula_str:
         if VERBOSE_FILTERING:
-            print(f"  - Formula '{formula_str}' is empty/None -> Variable/Invalid")
+            print(
+                f"  - Formula '{formula_str}' \
+                  is empty/None -> Variable/Invalid"
+            )
         return True
     patterns = [
         r"[xyzδ]",  # Matches standalone x, y, z, or delta
-        r"\([a-zA-Z0-9]*[_a-zA-Z][a-zA-Z0-9]*\)",  # Parentheses with letters e.g., (La,Sr)MnO3
+        r"\([a-zA-Z0-9]*[_a-zA-Z][a-zA-Z0-9]*\)",  # () w/ let eg (La,Sr)MnO3
         r"\[[a-zA-Z0-9]*[_a-zA-Z][a-zA-Z0-9]*\]",  # Brackets with letters
         r"_[a-zA-Z]",  # Underscore followed by letter e.g., Fe_xO_y
         r"[a-zA-Z]\d*\+",  # Cation notation e.g., Fe2+
@@ -30,7 +33,8 @@ def has_variable_subscripts(formula_str):
         if re.search(pattern, formula_str):
             if VERBOSE_FILTERING:
                 print(
-                    f"  - Formula '{formula_str}' matched regex '{pattern}' -> Variable"
+                    f"  - Formula '{formula_str}' \
+                        matched regex '{pattern}' -> Variable"
                 )
             return True
     try:
@@ -39,25 +43,31 @@ def has_variable_subscripts(formula_str):
             if not isinstance(amt, (int, float)):
                 if VERBOSE_FILTERING:
                     print(
-                        f"  - Formula '{formula_str}' parsed by Composition, but amount '{amt}' for element '{el}' is not numeric -> Variable"
+                        f"  - Formula '{formula_str}' parsed by Composition, \
+                            but amount '{amt}' for element '{el}' \
+                                is not numeric -> Variable"
                     )
                 return True
         for el in comp.elements:
             if not Element.is_valid_symbol(el.symbol):
                 if VERBOSE_FILTERING:
                     print(
-                        f"  - Formula '{formula_str}' parsed by Composition, but symbol '{el.symbol}' is not a valid Element -> Variable/Pseudo"
+                        f"  - Formula '{formula_str}' parsed by Composition, \
+                            but symbol '{el.symbol}' is not a valid Element \
+                                -> Variable/Pseudo"
                     )
                 return True
         if VERBOSE_FILTERING:
             print(
-                f"  - Formula '{formula_str}' passed regex and Composition checks -> Fixed"
+                f"  - Formula '{formula_str}' passed regex and Composition \
+                    checks -> Fixed"
             )
         return False
     except Exception as e:
         if VERBOSE_FILTERING:
             print(
-                f"  - Formula '{formula_str}' failed Composition check ({type(e).__name__}: {e}) -> Variable/Invalid"
+                f"  - Formula '{formula_str}' failed Composition check \
+                    ({type(e).__name__}: {e}) -> Variable/Invalid"
             )
         return True
 
@@ -92,7 +102,10 @@ def filter_synthesis_data():
             with open(file_path, "r") as f:
                 data = json.load(f)
         except Exception as e:
-            print(f"  - ERROR loading JSON from {json_file}: {e}. Skipping file.")
+            print(
+                f"  - ERROR loading JSON from {json_file}: {e}. \
+                  Skipping file."
+            )
             skipped_load_error += 1
             continue
 
@@ -101,7 +114,8 @@ def filter_synthesis_data():
         if synthesis_type != "solid-state":
             if VERBOSE_FILTERING:
                 print(
-                    f"  - Skipping: Synthesis type is '{synthesis_type}', not 'solid-state'."
+                    f"  - Skipping: Synthesis type is '{synthesis_type}', \
+                        not 'solid-state'."
                 )
             skipped_type += 1
             continue
@@ -121,7 +135,8 @@ def filter_synthesis_data():
             if has_variable_subscripts(formula):
                 if VERBOSE_FILTERING:
                     print(
-                        f"  - Skipping: Precursor '{formula}' identified as variable/pseudo/invalid."
+                        f"  - Skipping: Precursor '{formula}' \
+                            identified as variable/pseudo/invalid."
                     )
                 valid_precursors = False
                 skipped_precursor += 1
@@ -142,7 +157,8 @@ def filter_synthesis_data():
         if has_variable_subscripts(target_formula):
             if VERBOSE_FILTERING:
                 print(
-                    f"  - Skipping: Target '{target_formula}' identified as variable/pseudo/invalid."
+                    f"  - Skipping: Target '{target_formula}' \
+                        identified as variable/pseudo/invalid."
                 )
             skipped_target += 1
             continue
@@ -162,10 +178,14 @@ def filter_synthesis_data():
     print("\n--- Filtering Summary ---")
     print(f"Total files processed: {total_count}")
     print(
-        f"Files skipped (load/write error): {skipped_load_error + skipped_write_error}"
+        f"Files skipped (load/write error): \
+            {skipped_load_error + skipped_write_error}"
     )
     print(f"Files skipped (wrong synthesis type): {skipped_type}")
-    print(f"Files skipped (variable/pseudo/invalid precursor): {skipped_precursor}")
+    print(
+        f"Files skipped (variable/pseudo/invalid precursor): \
+          {skipped_precursor}"
+    )
     print(f"Files skipped (variable/pseudo/invalid target): {skipped_target}")
     print(f"Files successfully filtered and saved: {filtered_count}")
     print(f"Filtered files saved to: {output_dir}")

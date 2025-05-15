@@ -104,9 +104,13 @@ def run_conversion_to_ag():
 
     print(f"Attempted conversion for {len(raw_mp_entries)} MP entries.")
     print(
-        f"Successfully serialized {len(serialized_ags_with_source_info)} ActionGraphs."
+        f"Successfully serialized {len(serialized_ags_with_source_info)} \
+            ActionGraphs."
     )
-    print(f"MP entries skipped during AG construction: {skipped_mp_entries_count}")
+    print(
+        f"MP entries skipped during AG construction: \
+          {skipped_mp_entries_count}"
+    )
     print(f"AGs failed during serialization: {serialization_errors_count}")
     if not serialized_ags_with_source_info:
         return False
@@ -125,7 +129,8 @@ def run_conversion_to_ag():
             ag_duplicate_removed_count += 1
     final_unique_serialized_ags = list(unique_ag_map_for_dedup.values())
     print(
-        f"Removed {ag_duplicate_removed_count} duplicate AGs. Unique AGs: {len(final_unique_serialized_ags)}"
+        f"Removed {ag_duplicate_removed_count} duplicate AGs. Unique AGs: \
+            {len(final_unique_serialized_ags)}"
     )
     if not final_unique_serialized_ags:
         return False
@@ -154,7 +159,8 @@ def run_conversion_to_ag():
         except Exception:
             pass
     print(
-        f"Saved {final_saved_count} unique ActionGraph JSON files to {FILTERED_AG_OUTPUT_DIR}."
+        f"Saved {final_saved_count} unique ActionGraph JSON files to \
+            {FILTERED_AG_OUTPUT_DIR}."
     )
     print("Conversion and AG deduplication step completed.")
     return True

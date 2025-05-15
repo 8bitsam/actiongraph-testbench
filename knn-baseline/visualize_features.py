@@ -1,5 +1,3 @@
-# visualize_features_base.py
-
 import json
 import os
 import sys
@@ -57,11 +55,15 @@ def load_base_featurized_data(feature_dir):
             element_map = json.load(f)
         with open(os.path.join(feature_dir, "targets.json"), "r") as f:
             targets = json.load(f)
-        print(f"Loaded {features.shape[0]} samples with {features.shape[1]} features.")
+        print(
+            f"Loaded {features.shape[0]} samples with {features.shape[1]} \
+              features."
+        )
         return features, element_map, targets
     except FileNotFoundError as e:
         print(
-            f"Error: Base featurized data not found in {feature_dir}. File: {e.filename}",
+            f"Error: Base featurized data not found in {feature_dir}. \
+                File: {e.filename}",
             file=sys.stderr,
         )
         return None, None, None
@@ -72,14 +74,16 @@ def load_base_featurized_data(feature_dir):
 
 def plot_property_distributions_base(features, element_map, props_list, plots_dir):
     print(
-        "\nPlotting individual distributions of averaged elemental properties (Base k-NN)..."
+        "\nPlotting individual distributions of averaged elemental \
+            properties (Base k-NN)..."
     )
     num_elements_in_map = len(element_map)
     num_props = len(props_list)
     expected_dims = num_elements_in_map + num_props
     if features.shape[1] != expected_dims:
         print(
-            f"Error: Feature dimension mismatch. Expected {expected_dims}, got {features.shape[1]}.",
+            f"Error: Feature dimension mismatch. Expected {expected_dims}, \
+                got {features.shape[1]}.",
             file=sys.stderr,
         )
         return
@@ -117,7 +121,10 @@ def plot_property_distributions_base(features, element_map, props_list, plots_di
         sanitized_prop_name = prop_name.replace("/", "_").replace("\\", "_")
         save_path = os.path.join(plots_dir, f"base_prop_dist_{sanitized_prop_name}.png")
         plt.savefig(save_path, dpi=PUB_FIGURE_DPI)
-        print(f"  Saved property distribution for '{prop_name}' to {save_path}")
+        print(
+            f"  Saved property distribution for \
+              '{prop_name}' to {save_path}"
+        )
         plt.close(fig)
 
 
@@ -125,7 +132,8 @@ def plot_tsne_projection_base(
     features, targets, plots_dir, n_samples_tsne=2000, perplexity_tsne=30
 ):
     print(
-        f"\nPerforming t-SNE projection on Base features (on max {n_samples_tsne} samples)..."
+        f"\nPerforming t-SNE projection on Base features (on max \
+            {n_samples_tsne} samples)..."
     )
     os.makedirs(plots_dir, exist_ok=True)
     if features.shape[0] == 0:
@@ -143,7 +151,8 @@ def plot_tsne_projection_base(
         current_perplexity = max(5, len(features_subset) - 2)
         if current_perplexity < 5:
             print(
-                f"  Skipping t-SNE: Samples ({len(features_subset)}) too few for perplexity {current_perplexity}.",
+                f"  Skipping t-SNE: Samples ({len(features_subset)}) \
+                    too few for perplexity {current_perplexity}.",
                 file=sys.stderr,
             )
             return
@@ -160,7 +169,8 @@ def plot_tsne_projection_base(
         print(f"Error scaling Base data for t-SNE: {e}", file=sys.stderr)
         return
     print(
-        f"  Running t-SNE on Base features (perplexity={current_perplexity}, samples={scaled_features.shape[0]})..."
+        f"  Running t-SNE on Base features (perplexity={current_perplexity}, \
+            samples={scaled_features.shape[0]})..."
     )
     start_tsne_time = time.time()
     tsne = TSNE(
@@ -236,5 +246,8 @@ if __name__ == "__main__":
 
         print("\nBase Feature Visualization script finished.")
     else:
-        print("\nExiting Base feature visualization due to data loading failure.")
+        print(
+            "\nExiting Base feature visualization due to data \
+              loading failure."
+        )
         sys.exit(1)

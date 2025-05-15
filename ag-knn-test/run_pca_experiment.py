@@ -113,14 +113,17 @@ def plot_f1_vs_pca_from_data(
 
             if (
                 plot_bottom >= plot_top
-            ):  # Handle cases where all values are identical or very close to 0 or 1
+            ):  # Handle cases where all values are identical or
+                # very close to 0 or 1
                 if max_f1 > 0.01:  # If scores are not all zero
                     plot_bottom = max(0, max_f1 - 0.02)
                     plot_top = min(1, max_f1 + 0.02)
-                else:  # All scores are essentially zero
+                # All scores are essentially zero
+                else:
                     plot_bottom = 0
                     plot_top = 0.1
-                if plot_bottom >= plot_top:  # Final fallback for identical values
+                # Final fallback for identical values
+                if plot_bottom >= plot_top:
                     plot_bottom = max_f1 - 0.01 if max_f1 > 0.01 else 0
                     plot_top = max_f1 + 0.01 if max_f1 < 0.99 else 1.0
 
@@ -157,7 +160,9 @@ def plot_results_from_json(json_filepath, output_dir_for_plot):
 
     if pca_components is None or precursor_f1 is None or operation_f1 is None:
         print(
-            "Error: JSON file is missing one or more required keys ('pca_components', 'precursor_f1_scores', 'operation_f1_scores').",
+            "Error: JSON file is missing one or more required keys \
+                ('pca_components', 'precursor_f1_scores', \
+                    'operation_f1_scores').",
             file=sys.stderr,
         )
         return False
@@ -177,14 +182,20 @@ def run_full_experiment():
 
     for n_components_loop in pca_values_loop:
         print(
-            f"\n----- Running pipeline for PCA Components = {n_components_loop} -----"
+            f"\n----- Running pipeline for PCA Components = \
+                {n_components_loop} -----"
         )
 
-        print(f"\nStep 1: Featurizing with {n_components_loop} PCA components...")
+        print(
+            f"\nStep 1: Featurizing with \
+              {n_components_loop} PCA components..."
+        )
         start_time_step = time.time()
         if not run_featurize_ag(pca_n_components_arg=n_components_loop):
             print(
-                f"Featurization failed for {n_components_loop} components. Appending NaN and skipping."
+                f"Featurization failed for \
+                    {n_components_loop} components. \
+                        Appending NaN and skipping."
             )
             precursor_f1_scores_collected.append(np.nan)
             operation_f1_scores_collected.append(np.nan)
@@ -195,7 +206,8 @@ def run_full_experiment():
         start_time_step = time.time()
         if not run_train_ag(model_type="knn"):
             print(
-                f"Training failed for {n_components_loop} components. Appending NaN and skipping."
+                f"Training failed for {n_components_loop} components. \
+                    Appending NaN and skipping."
             )
             precursor_f1_scores_collected.append(np.nan)
             operation_f1_scores_collected.append(np.nan)
@@ -207,7 +219,8 @@ def run_full_experiment():
         eval_metrics = run_evaluate_ag(model_type="knn")
         if not eval_metrics or not isinstance(eval_metrics, dict):
             print(
-                f"Evaluation failed or returned invalid metrics for {n_components_loop} components. Appending NaN."
+                f"Evaluation failed or returned invalid metrics for \
+                    {n_components_loop} components. Appending NaN."
             )
             precursor_f1_scores_collected.append(np.nan)
             operation_f1_scores_collected.append(np.nan)
@@ -218,7 +231,8 @@ def run_full_experiment():
 
         print(f"Evaluation took {time.time() - start_time_step:.2f}s")
         print(
-            f"  Results for {n_components_loop} PCA: Precursor F1 = {current_prec_f1:.4f}, Operations F1 = {current_ops_f1:.4f}"
+            f"  Results for {n_components_loop} PCA: Precursor F1 = \
+                {current_prec_f1:.4f}, Operations F1 = {current_ops_f1:.4f}"
         )
 
         precursor_f1_scores_collected.append(current_prec_f1)
@@ -253,7 +267,10 @@ if __name__ == "__main__":
         "--plot_from_json",
         type=str,
         default=None,
-        help=f"Path to the results JSON file to plot. If provided, skips the experiment. Defaults to checking for '{DEFAULT_RESULTS_JSON_FILENAME}' in RESULTS_DIR if only flag is present.",
+        help=f"Path to the results JSON file to plot. If provided, \
+            skips the experiment. Defaults to checking for \
+                '{DEFAULT_RESULTS_JSON_FILENAME}' in RESULTS_DIR \
+                    if only flag is present.",
     )
     parser.add_argument(
         "--run_experiment",
@@ -272,7 +289,8 @@ if __name__ == "__main__":
 
         if not plot_results_from_json(json_file_to_plot, RESULTS_DIR):
             print(
-                f"Could not plot from {json_file_to_plot}. Try running the experiment first."
+                f"Could not plot from {json_file_to_plot}. \
+                    Try running the experiment first."
             )
             sys.exit(1)
     elif args.run_experiment:
@@ -281,13 +299,18 @@ if __name__ == "__main__":
         default_json_path = os.path.join(RESULTS_DIR, DEFAULT_RESULTS_JSON_FILENAME)
         if os.path.exists(default_json_path):
             print(
-                f"No specific action requested. Attempting to plot from default results file: {default_json_path}"
+                f"No specific action requested. Attempting to plot from \
+                    default results file: {default_json_path}"
             )
             plot_results_from_json(default_json_path, RESULTS_DIR)
         else:
             print("No action specified and no default results JSON found.")
-            print(f"Use --run_experiment to run the experiment and generate results.")
             print(
-                f"Or use --plot_from_json <path_to_your_results.json> to plot existing results."
+                f"Use --run_experiment to run the experiment and \
+                  generate results."
+            )
+            print(
+                f"Or use --plot_from_json <path_to_your_results.json> \
+                    to plot existing results."
             )
             parser.print_help()

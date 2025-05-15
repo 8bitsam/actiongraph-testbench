@@ -52,7 +52,10 @@ def load_mp_and_ag_data_pairs(ag_dir_path, mp_dir_path):
         return []
 
     paired_data = []
-    print(f"Scanning AG directory: {ag_dir_path} and MP directory: {mp_dir_path}")
+    print(
+        f"Scanning AG directory: {ag_dir_path} and MP directory: \
+          {mp_dir_path}"
+    )
     start_time = time.time()
     ag_files_found = 0
     pairs_loaded = 0
@@ -111,11 +114,20 @@ def load_mp_and_ag_data_pairs(ag_dir_path, mp_dir_path):
     print(f"Finished scanning. Found {ag_files_found} AG files.")
     print(f"Successfully loaded {pairs_loaded} AG-MP pairs.")
     if mp_file_missing_count > 0:
-        print(f"Skipped {mp_file_missing_count} pairs due to missing MP files.")
+        print(
+            f"Skipped {mp_file_missing_count} pairs due to \
+              missing MP files."
+        )
     if mp_load_errors > 0:
-        print(f"Skipped {mp_load_errors} pairs due to MP file loading errors.")
+        print(
+            f"Skipped {mp_load_errors} pairs due to MP file \
+              loading errors."
+        )
     if ag_load_errors > 0:
-        print(f"Skipped {ag_load_errors} pairs due to AG file loading errors.")
+        print(
+            f"Skipped {ag_load_errors} pairs due to AG file \
+              loading errors."
+        )
     print(f"Data pair loading took {end_time - start_time:.2f} seconds.")
 
     if not paired_data:
@@ -130,7 +142,8 @@ def get_element_map_from_ag_data(payloads_for_map_creation):
     ag_deserialize_errors_map = 0
 
     print(
-        f"Creating element map from {len(payloads_for_map_creation)} unique AG structures for map."
+        f"Creating element map from {len(payloads_for_map_creation)} \
+            unique AG structures for map."
     )
     for i, (ag_data_dict, _, _, ag_filename_map) in enumerate(
         payloads_for_map_creation
@@ -157,13 +170,18 @@ def get_element_map_from_ag_data(payloads_for_map_creation):
 
     if ag_deserialize_errors_map > 0:
         print(
-            f"Warning: Failed to deserialize {ag_deserialize_errors_map} AGs during element map creation."
+            f"Warning: Failed to deserialize {ag_deserialize_errors_map} \
+                AGs during element map creation."
         )
     if formula_parse_errors_map > 0:
         print(
-            f"Warning: Could not parse {formula_parse_errors_map} chemical formulas during element map creation."
+            f"Warning: Could not parse {formula_parse_errors_map} chemical \
+                formulas during element map creation."
         )
-    print(f"Successfully extracted elements from {ag_processed_for_map} AGs for map.")
+    print(
+        f"Successfully extracted elements from {ag_processed_for_map} \
+          AGs for map."
+    )
 
     try:
         common_elements = {el.symbol for el in Element}
@@ -176,7 +194,8 @@ def get_element_map_from_ag_data(payloads_for_map_creation):
     sorted_elements = sorted(list(all_elements))
     if not sorted_elements:
         print(
-            "Error: No valid elements found from ActionGraphs for element map.",
+            "Error: No valid elements found from ActionGraphs for \
+                element map.",
             file=sys.stderr,
         )
         return None
@@ -203,7 +222,9 @@ def get_recipe_hash(entry):
             else:
                 op_strings_list.append(str(op))
         op_strings_sorted = sorted(op_strings_list)
-        hash_content_str = f"TARGET_FORMULA::{target_formula}||PRECURSORS::{'#'.join(prec_formulas)}||OPERATIONS::{'&&'.join(op_strings_sorted)}"
+        hash_content_str = f"TARGET_FORMULA::{target_formula}||\
+            PRECURSORS::{'#'.join(prec_formulas)}||\
+            OPERATIONS::{'&&'.join(op_strings_sorted)}"
         return hash(hash_content_str)
     except Exception:
         fallback_str = str(entry.get("_source_file", str(entry)))
@@ -297,12 +318,14 @@ def run_featurize_ag(pca_n_components_arg=None):
     if pca_n_components_arg is not None:
         current_pca_components = pca_n_components_arg
         print(
-            f"--- Running ActionGraph Featurization with PCA (Components: {current_pca_components} from arg) ---"
+            f"--- Running ActionGraph Featurization with PCA \
+                (Components: {current_pca_components} from arg) ---"
         )
     else:
         current_pca_components = PCA_COMPONENTS_DEFAULT
         print(
-            f"--- Running ActionGraph Featurization with PCA (Components: {current_pca_components} from default) ---"
+            f"--- Running ActionGraph Featurization with PCA \
+                (Components: {current_pca_components} from default) ---"
         )
 
     os.makedirs(FEATURIZED_DATA_DIR_AG, exist_ok=True)
@@ -344,7 +367,10 @@ def run_featurize_ag(pca_n_components_arg=None):
     original_ag_ids_list = []
     skipped_count_total = 0
 
-    print(f"\nStarting main processing loop for {len(loaded_pairs)} loaded pairs...")
+    print(
+        f"\nStarting main processing loop for {len(loaded_pairs)} \
+          loaded pairs..."
+    )
     for i, payload_tuple in enumerate(loaded_pairs):
         if len(payload_tuple) != 3:
             skipped_count_total += 1
@@ -395,7 +421,8 @@ def run_featurize_ag(pca_n_components_arg=None):
             continue
 
     print(
-        f"\nFinished main processing loop. Successfully processed: {len(chemical_features_list)}"
+        f"\nFinished main processing loop. Successfully processed: \
+            {len(chemical_features_list)}"
     )
     print(f"Total skipped: {skipped_count_total}")
 
@@ -410,13 +437,19 @@ def run_featurize_ag(pca_n_components_arg=None):
         if len(adjacency_matrices_list) == 1:
             adj_array = adj_array.reshape(1, -1)
         else:
-            print(f"CRITICAL ERROR: adj_array 1D. Shape: {adj_array.shape}. Exiting.")
+            print(
+                f"CRITICAL ERROR: adj_array 1D. Shape: {adj_array.shape}. \
+                  Exiting."
+            )
             return False
     if adj_array.shape[0] == 0:
         print("CRITICAL ERROR: adj_array empty. Exiting.")
         return False
     if adj_array.ndim != 2:
-        print(f"CRITICAL ERROR: adj_array not 2D. Shape: {adj_array.shape}. Exiting.")
+        print(
+            f"CRITICAL ERROR: adj_array not 2D. Shape: {adj_array.shape}. \
+              Exiting."
+        )
         return False
 
     adj_scaler = StandardScaler()
@@ -430,14 +463,16 @@ def run_featurize_ag(pca_n_components_arg=None):
     if n_pca_effective > 0:
         if n_pca_effective < current_pca_components:
             print(
-                f"Warning: Requested PCA components ({current_pca_components}) reduced to {n_pca_effective}."
+                f"Warning: Requested PCA components \
+                    ({current_pca_components}) reduced to {n_pca_effective}."
             )
         pca = PCA(n_components=n_pca_effective)
         scaled_adj = adj_scaler.fit_transform(adj_array)
         reduced_adj = pca.fit_transform(scaled_adj)
     else:
         print(
-            f"Warning: PCA not performed (effective components is 0). PCA features will be empty."
+            f"Warning: PCA not performed (effective components is 0). \
+                PCA features will be empty."
         )
 
     print(f"Adjacency matrices PCA reduced. Shape: {reduced_adj.shape}")
@@ -445,7 +480,9 @@ def run_featurize_ag(pca_n_components_arg=None):
     final_features_list = []
     if len(chemical_features_list) != reduced_adj.shape[0]:
         print(
-            f"CRITICAL ERROR: Mismatch btw chemical features ({len(chemical_features_list)}) & PCA'd adj ({reduced_adj.shape[0]}). Exiting."
+            f"CRITICAL ERROR: Mismatch btw chemical features \
+                ({len(chemical_features_list)}) & PCA'd adj \
+                    ({reduced_adj.shape[0]}). Exiting."
         )
         return False
 
@@ -482,21 +519,28 @@ def run_featurize_ag(pca_n_components_arg=None):
 
     actual_saved_pca_components = reduced_adj.shape[1]
     print(
-        f"Final feature dimension: {final_feature_array.shape[1]} (Chem: {chemical_features_list[0].shape[0]} + Adj_PCA: {actual_saved_pca_components})"
+        f"Final feature dimension: {final_feature_array.shape[1]} \
+            (Chem: {chemical_features_list[0].shape[0]} + \
+                Adj_PCA: {actual_saved_pca_components})"
     )
     print(
-        f"--- ActionGraph Featurization with PCA (Components: {current_pca_components}) Completed ---"
+        f"--- ActionGraph Featurization with PCA (Components: \
+            {current_pca_components}) Completed ---"
     )
     return True
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Featurize ActionGraph data with PCA.")
+    parser = argparse.ArgumentParser(
+        description="Featurize \
+                                     ActionGraph data with PCA."
+    )
     parser.add_argument(
         "--pca_components",
         type=int,
         default=PCA_COMPONENTS_DEFAULT,
-        help=f"Number of principal components for adjacency matrix PCA (default: {PCA_COMPONENTS_DEFAULT}).",
+        help=f"Number of principal components for adjacency matrix \
+            PCA (default: {PCA_COMPONENTS_DEFAULT}).",
     )
     args = parser.parse_args()
 

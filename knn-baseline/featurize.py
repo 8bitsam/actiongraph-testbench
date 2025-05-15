@@ -1,6 +1,3 @@
-# featurize.py
-
-import hashlib  # Added for creating content hash
 import json
 import os
 import sys
@@ -10,7 +7,6 @@ import warnings
 import numpy as np
 from pymatgen.core import Composition, Element
 
-# --- Configuration ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
 RAW_DATA_DIR = os.path.join(DATA_DIR, "filtered-mp-data/")
@@ -29,7 +25,6 @@ warnings.filterwarnings("ignore", category=UserWarning, module="pymatgen")
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
-# --- Helper Functions (load_data_from_directory, get_element_map, featurize_target) ---
 def load_data_from_directory(dir_path):
     """Loads synthesis data from all .json files in a directory."""
     if not os.path.isdir(dir_path):
@@ -50,16 +45,17 @@ def load_data_from_directory(dir_path):
                 with open(filepath, "r", encoding="utf-8") as f:
                     data_entry = json.load(f)
                     if isinstance(data_entry, dict):
-                        data_entry["_source_file"] = filename  # Add identifier
+                        data_entry["_source_file"] = filename
                         all_data.append(data_entry)
                         loaded_count += 1
                     else:
                         error_count += 1
             except Exception:
-                error_count += 1  # Simplified error handling
+                error_count += 1
     end_time = time.time()
     print(
-        f"Finished scanning. Loaded {loaded_count} entries, skipped {error_count} files."
+        f"Finished scanning. Loaded {loaded_count} entries, \
+            skipped {error_count} files."
     )
     print(f"Data loading took {end_time - start_time:.2f} seconds.")
     if not all_data:
@@ -97,7 +93,8 @@ def get_element_map(data):
             parse_error_count += 1
     if parse_error_count > 0:
         print(
-            f"Warning: Could not parse target formula for {parse_error_count} entries during element map creation."
+            f"Warning: Could not parse target formula for \
+                {parse_error_count} entries during element map creation."
         )
     try:
         common_elements = {el.symbol for el in Element}
@@ -143,7 +140,7 @@ def featurize_target(formula, element_map, element_props_list):
                         total_amount_for_prop += amount
                         prop_available = True
                 except Exception:
-                    pass  # Catch all errors during property lookup
+                    pass
             if prop_available and total_amount_for_prop > 0:
                 prop_vector[i] = weighted_sum / total_amount_for_prop
         feature_vector = np.concatenate((comp_vector, prop_vector))
@@ -153,41 +150,32 @@ def featurize_target(formula, element_map, element_props_list):
 
 
 def get_recipe_hash(entry):
-    """Creates a unique hash for a recipe based on target, precursors, and
-    operations."""
     try:
         target_formula = entry.get("target", {}).get("material_formula", "")
         precursors = entry.get("precursors", [])
         operations = entry.get("operations", [])
-
-        # Create canonical representations
-        # Sort precursors by formula
         prec_formulas = sorted(
             [p.get("material_formula", "") for p in precursors if isinstance(p, dict)]
         )
-        # Sort operations based on their JSON string representation
-        op_strings = sorted(
-            [
-                json.dumps(op, sort_keys=True)
-                for op in operations
-                if isinstance(op, dict)
-            ]
-        )
-
-        # Combine into a single string
-        hash_content = f"TARGET:{target_formula}|PRECURSORS:{','.join(prec_formulas)}|OPERATIONS:{'|'.join(op_strings)}"
-
-        # Return MD5 hash (or other hash like SHA256)
-        return hashlib.md5(
-            hash_content.encode("utf-8")
-        ).hexdigest()  # DONT USE md5 hash
-    except Exception as e:
-        # Handle cases where serialization fails (e.g., non-standard data in ops)
-        # print(f"Warning: Could not generate hash for entry {_entry.get('_source_file', 'unknown')}: {e}", file=sys.stderr)
-        # Return a unique hash based on the source file as a fallback, though less robust for content duplicates
-        return hashlib.md5(
-            str(entry.get("_source_file", os.urandom(16))).encode("utf-8")
-        ).hexdigest()
+        op_strings_list = []
+        for op in operations:
+            if isinstance(op, dict):
+                try:
+                    op_strings_list.append(
+                        json.dumps(op, sort_keys=True, separators=(",", ":"))
+                    )
+                except TypeError:
+                    op_strings_list.append(str(op))
+            else:
+                op_strings_list.append(str(op))
+        op_strings_sorted = sorted(op_strings_list)
+        hash_content_str = f"TARGET_FORMULA::{target_formula}||\
+            PRECURSORS::{'#'.join(prec_formulas)}||\
+            OPERATIONS::{'&&'.join(op_strings_sorted)}"
+        return hash(hash_content_str)
+    except Exception:
+        fallback_str = str(entry.get("_source_file", str(entry)))
+        return hash(fallback_str)
 
 
 def run_featurize():
@@ -197,11 +185,9 @@ def run_featurize():
     if not raw_data:
         return False
     print(f"\nSuccessfully loaded {len(raw_data)} potential entries overall.")
-
-    # --- Deduplication Step ---
     print("\nDeduplicating entries based on recipe content...")
     start_dedup_time = time.time()
-    unique_recipes = {}  # Use dict to store first encountered entry for each hash
+    unique_recipes = {}
     duplicate_count = 0
     processed_for_dedup = 0
     for entry in raw_data:
@@ -212,12 +198,21 @@ def run_featurize():
             duplicate_count += 1
         processed_for_dedup += 1
         if processed_for_dedup % 10000 == 0:
-            print(f"  Checked {processed_for_dedup}/{len(raw_data)} for duplicates...")
+            print(
+                f"  Checked {processed_for_dedup}/{len(raw_data)} \
+                  for duplicates..."
+            )
 
     deduplicated_data = list(unique_recipes.values())
     end_dedup_time = time.time()
-    print(f"Deduplication took {end_dedup_time - start_dedup_time:.2f} seconds.")
-    print(f"Removed {duplicate_count} duplicate entries based on recipe hash.")
+    print(
+        f"Deduplication took {end_dedup_time - start_dedup_time:.2f} \
+          seconds."
+    )
+    print(
+        f"Removed {duplicate_count} duplicate entries based on recipe \
+          hash."
+    )
     print(f"Proceeding with {len(deduplicated_data)} unique entries.")
 
     if not deduplicated_data:
@@ -227,9 +222,8 @@ def run_featurize():
         )
         return False
 
-    # --- Proceed with Featurization using deduplicated_data ---
     print("\nCreating element map from unique entries...")
-    element_map = get_element_map(deduplicated_data)  # Use unique data
+    element_map = get_element_map(deduplicated_data)
     if not element_map:
         print("Failed to create element map. Exiting.", file=sys.stderr)
         return False
@@ -240,13 +234,12 @@ def run_featurize():
     processed_count, skipped_count = 0, 0
     start_featurize_time = time.time()
 
-    # Iterate over the unique data now
     for i, entry in enumerate(deduplicated_data):
         target_data = entry.get("target", {})
         target_formula = target_data.get("material_formula", None)
         precursors = entry.get("precursors", None)
         operations = entry.get("operations", None)
-        source_file = entry.get("_source_file", i)  # Get original identifier
+        source_file = entry.get("_source_file", i)
 
         valid_entry = (
             isinstance(target_data, dict)
@@ -266,19 +259,23 @@ def run_featurize():
                 features.append(feature_vector)
                 recipes.append({"precursors": precursors, "operations": operations})
                 targets.append(target_formula)
-                original_indices.append(source_file)  # Store identifier of unique entry
+                original_indices.append(source_file)
                 processed_count += 1
             else:
                 skipped_count += 1
         else:
             skipped_count += 1
-        # Reduce progress update frequency
         if (i + 1) % 20000 == 0:
-            print(f"  Featurized {i+1}/{len(deduplicated_data)} unique entries...")
+            print(
+                f"  \
+                  Featurized {i+1}/{len(deduplicated_data)} \
+                    unique entries..."
+            )
 
     end_featurize_time = time.time()
     print(
-        f"\nFeaturization of unique entries took {end_featurize_time - start_featurize_time:.2f} seconds."
+        f"\nFeaturization of unique entries took \
+            {end_featurize_time - start_featurize_time:.2f} seconds."
     )
 
     if not features:
@@ -288,7 +285,8 @@ def run_featurize():
         return False
 
     print(
-        f"\nSuccessfully processed {processed_count} unique entries into feature vectors."
+        f"\nSuccessfully processed {processed_count} unique entries into \
+            feature vectors."
     )
     print(f"Skipped {skipped_count} unique entries during featurization.")
     feature_array = np.array(features)
@@ -303,7 +301,7 @@ def run_featurize():
         with open(os.path.join(FEATURIZED_DATA_DIR, "targets.json"), "w") as f:
             json.dump(targets, f)
         with open(os.path.join(FEATURIZED_DATA_DIR, "original_indices.json"), "w") as f:
-            json.dump(original_indices, f)  # These are identifiers from unique entries
+            json.dump(original_indices, f)
         with open(os.path.join(FEATURIZED_DATA_DIR, "element_map.json"), "w") as f:
             json.dump(element_map, f)
     except Exception as e:

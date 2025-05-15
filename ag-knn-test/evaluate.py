@@ -9,7 +9,8 @@ from sklearn.model_selection import train_test_split
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
-FEATURIZED_DATA_DIR_AG = os.path.join(DATA_DIR, "featurized-data-actiongraph/")
+FEATURIZED_DATA_DIR_AG = os.path.join(DATA_DIR,
+                                      "featurized-data-actiongraph/")
 MODEL_AG_BASE_DIR = os.path.join(DATA_DIR, "models_ag")
 
 TEST_SIZE = 0.25
@@ -88,12 +89,15 @@ def compare_recipes_detailed(pred_recipe, true_recipe, is_rf=False):
     if pred_prec_formulas == true_prec_formulas and pred_prec_formulas:
         results["precursors_exact_match"] = True
 
-    intersection_prec = len(pred_prec_formulas.intersection(true_prec_formulas))
+    intersection_prec = \
+        len(pred_prec_formulas.intersection(true_prec_formulas))
     union_prec = len(pred_prec_formulas.union(true_prec_formulas))
     if union_prec > 0:
-        results["precursors_formula_jaccard"] = intersection_prec / union_prec
+        results["precursors_formula_jaccard"] = \
+            intersection_prec / union_prec
 
-    prec_p, prec_r, prec_f1 = calculate_prf1(pred_prec_formulas, true_prec_formulas)
+    prec_p, prec_r, prec_f1 = calculate_prf1(pred_prec_formulas,
+                                             true_prec_formulas)
     (
         results["precursors_precision"],
         results["precursors_recall"],
@@ -123,45 +127,54 @@ def compare_recipes_detailed(pred_recipe, true_recipe, is_rf=False):
                     if isinstance(op, dict)
                 ]
             )
-            if sorted_pred_ops_str == sorted_true_ops_str and sorted_pred_ops_str:
+            if sorted_pred_ops_str == sorted_true_ops_str and \
+                sorted_pred_ops_str:
                 results["operations_exact_match"] = True
         except Exception:
             pass
 
     pred_op_types = set(
-        op["type"] for op in pred_ops_list if isinstance(op, dict) and op.get("type")
+        op["type"] for op in pred_ops_list if isinstance(op, dict) \
+            and op.get("type")
     )
     true_op_types = set(
-        op["type"] for op in true_ops_list if isinstance(op, dict) and op.get("type")
+        op["type"] for op in true_ops_list if isinstance(op, dict) \
+            and op.get("type")
     )
 
     intersection_op_types = len(pred_op_types.intersection(true_op_types))
     union_op_types = len(pred_op_types.union(true_op_types))
     if union_op_types > 0:
-        results["operations_type_jaccard"] = intersection_op_types / union_op_types
+        results["operations_type_jaccard"] = \
+            intersection_op_types / union_op_types
 
-    op_type_p, op_type_r, op_type_f1 = calculate_prf1(pred_op_types, true_op_types)
-    results["op_type_precision"], results["op_type_recall"], results["op_type_f1"] = (
+    op_type_p, op_type_r, op_type_f1 = calculate_prf1(pred_op_types, \
+                                                      true_op_types)
+    results["op_type_precision"], results["op_type_recall"], \
+        results["op_type_f1"] = (
         op_type_p,
         op_type_r,
         op_type_f1,
     )
 
     if not is_rf:
-        results["operations_length_match"] = len(pred_ops_list) == len(true_ops_list)
+        results["operations_length_match"] = \
+            len(pred_ops_list) == len(true_ops_list)
     return results
 
 
 def run_evaluate_ag(model_type="knn"):
     if model_type != "knn":
         print(
-            f"Error: This script is configured for k-NN with ActionGraph features. Model type '{model_type}' not supported here.",
+            f"Error: This script is configured for k-NN with ActionGraph \
+                features. Model type '{model_type}' not supported here.",
             file=sys.stderr,
         )
         return None
 
     print(
-        f"--- Running Evaluation Step (Model: {model_type.upper()} with ActionGraph Features) ---"
+        f"--- Running Evaluation Step (Model: {model_type.upper()} \
+            with ActionGraph Features) ---"
     )
 
     MODEL_DIR = os.path.join(MODEL_AG_BASE_DIR, f"{model_type}-model")
@@ -169,17 +182,21 @@ def run_evaluate_ag(model_type="knn"):
 
     print(f"\nLoading AG-featurized data from: {FEATURIZED_DATA_DIR_AG}")
     try:
-        all_X_ag = np.load(os.path.join(FEATURIZED_DATA_DIR_AG, "features_ag.npy"))
+        all_X_ag = np.load(os.path.join(FEATURIZED_DATA_DIR_AG, \
+                                        "features_ag.npy"))
         with open(
-            os.path.join(FEATURIZED_DATA_DIR_AG, "recipes_mp_style_for_ag.json"), "r"
+            os.path.join(FEATURIZED_DATA_DIR_AG, \
+                         "recipes_mp_style_for_ag.json"), "r"
         ) as f:
             all_recipes_mp_style = json.load(f)
         with open(
-            os.path.join(FEATURIZED_DATA_DIR_AG, "targets_ag_output_formula.json"), "r"
+            os.path.join(FEATURIZED_DATA_DIR_AG, \
+                         "targets_ag_output_formula.json"), "r"
         ) as f:
             all_targets_ag_formula = json.load(f)
         with open(
-            os.path.join(FEATURIZED_DATA_DIR_AG, "original_ag_ids.json"), "r"
+            os.path.join(FEATURIZED_DATA_DIR_AG, \
+                         "original_ag_ids.json"), "r"
         ) as f:
             all_original_ag_ids = json.load(f)
 
@@ -189,16 +206,19 @@ def run_evaluate_ag(model_type="knn"):
             == len(all_targets_ag_formula)
             == len(all_original_ag_ids)
         ):
-            raise ValueError("Mismatch between loaded AG-featurized data lengths.")
+            raise ValueError("Mismatch between loaded \
+                             AG-featurized data lengths.")
         print(f"Loaded {len(all_X_ag)} total AG-featurized samples.")
     except FileNotFoundError:
         print(
-            f"Error: Featurized AG data not found in {FEATURIZED_DATA_DIR_AG}. Run 'featurize.py'.",
+            f"Error: Featurized AG data not found in \
+                {FEATURIZED_DATA_DIR_AG}. Run 'featurize.py'.",
             file=sys.stderr,
         )
         return None
     except Exception as e:
-        print(f"Error loading featurized AG data: {e}", file=sys.stderr)
+        print(f"Error loading featurized AG data: {e}",
+              file=sys.stderr)
         return None
 
     model_artifacts_ag = {}
@@ -214,7 +234,8 @@ def run_evaluate_ag(model_type="knn"):
         )
     except FileNotFoundError:
         print(
-            f"Error: AG Model artifacts not found in {MODEL_DIR}. Run 'train.py --model_type {model_type}'.",
+            f"Error: AG Model artifacts not found in {MODEL_DIR}. \
+                Run 'train.py --model_type {model_type}'.",
             file=sys.stderr,
         )
         return None
@@ -223,15 +244,19 @@ def run_evaluate_ag(model_type="knn"):
         return None
 
     print(
-        f"\nRecreating train/test split for AG data (Test size: {TEST_SIZE}, Random State: {RANDOM_STATE})..."
+        f"\nRecreating train/test split for AG data (Test size: {TEST_SIZE}, \
+            Random State: {RANDOM_STATE})..."
     )
     if len(all_X_ag) < 2:
-        print("Error: Not enough AG data points (< 2) for split.", file=sys.stderr)
+        print("Error: Not enough AG data points (< 2) for split.",
+              file=sys.stderr)
         return None
 
     original_indices_arr = np.arange(len(all_X_ag))
-    _X_train_ag_feat, X_test_ag_feat, _train_orig_idx, test_orig_idx = train_test_split(
-        all_X_ag, original_indices_arr, test_size=TEST_SIZE, random_state=RANDOM_STATE
+    _X_train_ag_feat, X_test_ag_feat, _train_orig_idx, \
+        test_orig_idx = train_test_split(
+        all_X_ag, original_indices_arr, test_size=TEST_SIZE,
+        random_state=RANDOM_STATE
     )
 
     y_test_recipes_mp_style = [all_recipes_mp_style[i] for i in test_orig_idx]
@@ -241,7 +266,8 @@ def run_evaluate_ag(model_type="knn"):
     print(f"Test set size (AG features): {len(X_test_ag_feat)}")
     if len(X_test_ag_feat) == 0:
         print(
-            "Warning: Test set (AG features) has size 0 after split. Evaluation may not be meaningful.",
+            "Warning: Test set (AG features) has size 0 after split. \
+                Evaluation may not be meaningful.",
             file=sys.stderr,
         )
         return {"avg_precursors_f1": 0.0, "avg_op_type_f1": 0.0}
@@ -249,10 +275,12 @@ def run_evaluate_ag(model_type="knn"):
     print("\nScaling AG test features using loaded scaler...")
     scaler_ag = model_artifacts_ag["scaler_ag"]
     X_test_ag_scaled = scaler_ag.transform(X_test_ag_feat)
-    X_test_ag_scaled = np.nan_to_num(X_test_ag_scaled, nan=0.0, posinf=0.0, neginf=0.0)
+    X_test_ag_scaled = np.nan_to_num(X_test_ag_scaled, nan=0.0,
+                                     posinf=0.0, neginf=0.0)
 
     print(
-        f"\nPredicting recipes for the AG test set using {model_type.upper()} model..."
+        f"\nPredicting recipes for the AG test set using \
+            {model_type.upper()} model..."
     )
     predicted_recipes_mp_style = []
 
@@ -261,20 +289,24 @@ def run_evaluate_ag(model_type="knn"):
         train_original_indices_ag = np.array(
             model_artifacts_ag["train_original_indices_ag"]
         )
-        _distances_all, neighbor_indices_in_train_subset = knn_model_ag.kneighbors(
+        _distances_all, neighbor_indices_in_train_subset = \
+            knn_model_ag.kneighbors(
             X_test_ag_scaled
         )
 
         for i in range(len(X_test_ag_scaled)):
-            nearest_neighbor_train_subset_idx = neighbor_indices_in_train_subset[i][0]
+            nearest_neighbor_train_subset_idx = \
+                neighbor_indices_in_train_subset[i][0]
             original_dataset_idx_of_neighbor = train_original_indices_ag[
                 nearest_neighbor_train_subset_idx
             ]
-            predicted_recipe = all_recipes_mp_style[original_dataset_idx_of_neighbor]
+            predicted_recipe = \
+                all_recipes_mp_style[original_dataset_idx_of_neighbor]
             predicted_recipes_mp_style.append(predicted_recipe)
     else:
         print(
-            f"Error: Prediction logic for model_type '{model_type}' with AGs not implemented.",
+            f"Error: Prediction logic for model_type \
+                '{model_type}' with AGs not implemented.",
             file=sys.stderr,
         )
         return None
@@ -284,7 +316,9 @@ def run_evaluate_ag(model_type="knn"):
         and len(X_test_ag_feat) > 0
     ):
         print(
-            f"Error: Mismatch in number of predictions ({len(predicted_recipes_mp_style)}) and test samples ({len(y_test_recipes_mp_style)}).",
+            f"Error: Mismatch in number of predictions \
+                ({len(predicted_recipes_mp_style)}) and test \
+                    samples ({len(y_test_recipes_mp_style)}).",
             file=sys.stderr,
         )
         return None
@@ -294,7 +328,8 @@ def run_evaluate_ag(model_type="knn"):
     for i in range(len(predicted_recipes_mp_style)):
         pred_recipe = predicted_recipes_mp_style[i]
         true_recipe = y_test_recipes_mp_style[i]
-        eval_metrics = compare_recipes_detailed(pred_recipe, true_recipe, is_rf=False)
+        eval_metrics = compare_recipes_detailed(pred_recipe, \
+                                                true_recipe, is_rf=False)
         evaluation_results_list.append(eval_metrics)
 
     avg_results = {}
@@ -347,39 +382,57 @@ def run_evaluate_ag(model_type="knn"):
 
     print("\n-- Precursor Metrics --")
     print(
-        f"{'avg_precursors_exact_match':<30}: {format_metric_value(avg_results.get('avg_precursors_exact_match', 0.0))}"
+        f"{'avg_precursors_exact_match':<30}: \
+            {format_metric_value(avg_results.get(
+                'avg_precursors_exact_match', 0.0))}"
     )
     print(
-        f"{'avg_precursors_formula_jaccard':<30}: {format_metric_value(avg_results.get('avg_precursors_formula_jaccard', 0.0))}"
+        f"{'avg_precursors_formula_jaccard':<30}: \
+            {format_metric_value(avg_results.get(
+                'avg_precursors_formula_jaccard', 0.0))}"
     )
     print(
-        f"{'avg_precursors_precision':<30}: {format_metric_value(avg_results.get('avg_precursors_precision', 0.0))}"
+        f"{'avg_precursors_precision':<30}: {format_metric_value(
+            avg_results.get('avg_precursors_precision', 0.0))}"
     )
     print(
-        f"{'avg_precursors_recall':<30}: {format_metric_value(avg_results.get('avg_precursors_recall', 0.0))}"
+        f"{'avg_precursors_recall':<30}: {format_metric_value(avg_results.get(
+            'avg_precursors_recall', 0.0))}"
     )
     print(
-        f"{'avg_precursors_f1':<30}: {format_metric_value(avg_results.get('avg_precursors_f1', 0.0))}"
+        f"{'avg_precursors_f1':<30}: {format_metric_value(avg_results.get(
+            'avg_precursors_f1', 0.0))}"
     )
 
     print("\n-- Operation Metrics --")
     print(
-        f"{'avg_operations_exact_match':<30}: {format_metric_value(avg_results.get('avg_operations_exact_match', 0.0))}"
+        f"{'avg_operations_exact_match':<30}: \
+            {format_metric_value(avg_results.get(
+                'avg_operations_exact_match', 0.0))}"
     )
     print(
-        f"{'avg_operations_length_match':<30}: {format_metric_value(avg_results.get('avg_operations_length_match', 0.0))}"
+        f"{'avg_operations_length_match':<30}: \
+            {format_metric_value(avg_results.get(
+                'avg_operations_length_match', 0.0))}"
     )
     print(
-        f"{'avg_operations_type_jaccard':<30}: {format_metric_value(avg_results.get('avg_operations_type_jaccard', 0.0))}"
+        f"{'avg_operations_type_jaccard':<30}: \
+            {format_metric_value(avg_results.get(\
+                'avg_operations_type_jaccard', 0.0))}"
     )
     print(
-        f"{'avg_op_type_precision':<30}: {format_metric_value(avg_results.get('avg_op_type_precision', 0.0))}"
+        f"{'avg_op_type_precision':<30}: \
+            {format_metric_value(avg_results.get(
+                'avg_op_type_precision', 0.0))}"
     )
     print(
-        f"{'avg_op_type_recall':<30}: {format_metric_value(avg_results.get('avg_op_type_recall', 0.0))}"
+        f"{'avg_op_type_recall':<30}: \
+            {format_metric_value(avg_results.get(
+                'avg_op_type_recall', 0.0))}"
     )
     print(
-        f"{'avg_op_type_f1':<30}: {format_metric_value(avg_results.get('avg_op_type_f1', 0.0))}"
+        f"{'avg_op_type_f1':<30}: {format_metric_value(avg_results.get(
+            'avg_op_type_f1', 0.0))}"
     )
 
     print("\nAG Evaluation step completed successfully.")
@@ -394,7 +447,8 @@ def run_evaluate_ag(model_type="knn"):
             else 0.0
         ),
         "avg_op_type_f1": (
-            float(op_f1_val) if isinstance(op_f1_val, (int, float, np.number)) else 0.0
+            float(op_f1_val) if isinstance(op_f1_val,
+                                           (int, float, np.number)) else 0.0
         ),
     }
     return return_metrics
