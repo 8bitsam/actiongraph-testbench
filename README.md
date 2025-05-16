@@ -11,8 +11,8 @@ Sets" section). An alternative is to download it from
 [kaggle](https://www.kaggle.com/datasets/samandrello/actiongraph-inorganic-synthesis), which contains the
 dataset used in the experiment.
 
-If you download it this way, ensure the data (`json` files) are placed directly at `Data/filtered-ag-data`
-(with the top-level directory being this repository).
+If you download it this way, ensure the two folders extracted from the archives are placed at
+`Data/filtered-mp-data` and `Data/filtered-ag-data`, corresponding to the zip file names.
 
 ## Running Code
 
