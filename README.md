@@ -4,37 +4,40 @@ See paper: "Representation of Inorganic Synthesis Reactions and Prediction: Grap
 
 ## Data Availability
 
-The data set used in this paper can be obtained either directly by running the code (see the "Creating Data Sets" section). An alternative is to download it directly at [https://www.kaggle.com/datasets/samandrello/actiongraph-inorganic-synthesis](kaggle).
+The dataset used in this paper can be obtained either directly by running the code (see the "Creating Data
+Sets" section). An alternative is to download it from 
+[kaggle](https://www.kaggle.com/datasets/samandrello/actiongraph-inorganic-synthesis), which contains the
+dataset used in the experiment.
 
-If you download it this way, ensure the data (`json` files) are placed directly at `Data/filtered-ag-data` (with the top-level directory being this repository).
+If you download it this way, ensure the data (`json` files) are placed directly at `Data/filtered-ag-data`
+(with the top-level directory being this repository).
 
 ## Running Code
 
 ### Initialization
 
-1. Before running the scripts, first install the `actiongraph.py` file as a
-   package. This can be done by running `pip install -e actiongraph` while in
-   this directory. This will also install all requirements to run the scripts.
-2. Then, you can test to see if it works by running the Juptyer notebook in
+1. Before running the scripts, first install the necessary requirements by running `pip install requirements.txt`
+   while in this directory.
+2. Then, you can test to see if ActionGraphs are being created correctly by running the Juptyer notebook in
    `example/`. This should convert two Materials Project synthesis reactions into
    ActionGraphs, then display the graphs.
 
-### Creating Data Sets
+### Creating datasets
 
 1. Create a Materials Project account and obtain an API key [here](https://next-gen.materialsproject.org/api).
 2. Place this key in a text file called `api-key.txt` in `utils/`
 3. Run `fetch_synthesis_data.py` and then `filter_synthesis_data.py` in
-   `utils/`. This will create data set 1 (raw Materials Project data).
-4. Run `convert.py` in `ag-knn-test`. This will convert the first data set
-   into serialized ActionGraphs and thus make data set 2.
-5. Ensure the data sets match by running `remover.py` in `utils/`.
+   `utils/`. This will create dataset 1 (raw Materials Project data).
+4. Run `convert.py` in `ag-knn-test`. This will convert the first dataset
+   into serialized ActionGraphs and thus make dataset 2.
+5. Ensure the datasets match by running `remover.py` in `utils/`.
 
 ### Training Models
 
-1. To run the model on data set 1, run the script `pipeline.py`
+1. To run the model on dataset 1, run the script `pipeline.py`
    in `knn-baseline/`. This will featurize the data, train, evaluate, and save
    the model.
-2. To run the model on data set 2, first find the maximum number of nodes. To
+2. To run the model on dataset 2, first find the maximum number of nodes. To
    do this, run `find_max_nodes.py` in `utils/` and update the `MAX_NODES`
    variable in `ag-knn-test/featurize.py`. Then, run `pipeline.py` in
    `ag-knn-test/`.

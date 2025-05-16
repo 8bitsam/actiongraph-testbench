@@ -12,7 +12,7 @@ from pymatgen.core import Composition, Element
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-from actiongraph.actiongraph import ActionGraph
+from actiongraph import ActionGraph
 
 # Path configuration
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))

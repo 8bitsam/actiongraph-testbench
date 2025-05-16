@@ -4,7 +4,7 @@ import sys
 
 from tqdm import tqdm
 
-from actiongraph.actiongraph import ActionGraph
+from actiongraph import ActionGraph
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, "..", "Data"))
