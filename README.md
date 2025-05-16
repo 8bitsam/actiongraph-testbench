@@ -1,5 +1,7 @@
 # Documentation for the ActionGraph Dataset and Benchmarks
 
+### Authors and Contributors
+
 See paper: "Representation of Inorganic Synthesis Reactions and Prediction: Graphical Framework and Datasets."
 
 ## Data Availability
